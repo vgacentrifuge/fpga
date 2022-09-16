@@ -1,4 +1,4 @@
-// Tutorial from https://nandland.com/your-first-verilog-program-an-led-blinker/?fbclid = IwAR2WqR3dR1zyNO6u8F1KIJKxUiZVyAu8CiXei1oYjXaSpWzBtIuuBeyFQOs
+// Tutorial from https://nandland.com/your-first-verilog-program-an-led-blinker
 module tutorial_led_blink (i_clock,
                            i_enable,
                            i_switch_1,
