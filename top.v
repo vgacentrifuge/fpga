@@ -4,7 +4,7 @@ module top(
     input clk,
     output [7:0] LED
 );
-    reg [31:0] counter_val;
+    wire [31:0] counter_val;
     wire reset;
 
     counter led_counter (
