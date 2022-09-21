@@ -2,7 +2,7 @@
 
 module top(
     input clk,
-    output wire [7:0] LED
+    output [7:0] LED
 );
     reg [31:0] counter_val;
     wire reset;
@@ -14,9 +14,6 @@ module top(
         .value(counter_val)
     );
 
-    always @ (posedge clk) begin
-        LED <= counter_val[30:23];
-    end
-
+    assign LED <= counter_val[30:23];
     assign reset = counter_val[31];
 endmodule
