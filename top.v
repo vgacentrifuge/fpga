@@ -14,6 +14,6 @@ module top(
         .value(counter_val)
     );
 
-    assign LED <= counter_val[30:23];
+    assign LED = counter_val[30:23];
     assign reset = counter_val[31];
 endmodule
