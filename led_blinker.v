@@ -106,9 +106,8 @@ module tutorial_led_blink (i_clock,
     // Alternative way to design multiplexer (same as above):
     // More compact, but harder to read, especially to those new to Verilog
     // assign w_LED_SELECT = i_switch_1 ? (i_switch_2 ? r_TOGGLE_1HZ : r_TOGGLE_10HZ) :
-    (i_switch_2 ? r_TOGGLE_50HZ : r_TOGGLE_100HZ);
+    // (i_switch_2 ? r_TOGGLE_50HZ : r_TOGGLE_100HZ);
     // assign o_led_drive = w_LED_SELECT & i_enable;
-    
     
     end
     
