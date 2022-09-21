@@ -14,6 +14,9 @@ module top(
         .value(counter_val)
     );
 
+    always @ (posedge clk) begin
+        LED <= counter_val[30:23];
+    end
+
     assign reset = counter_val[31];
-    assign LED = counter_val[30:23];
 endmodule
