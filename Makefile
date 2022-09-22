@@ -1,4 +1,4 @@
-SRC=$(wildcard *.v)
+SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
 
 format: $(SRC)
 	for file in $^ ; do \
@@ -6,7 +6,7 @@ format: $(SRC)
 	done
 
 build_sim:
-	verilator -Wall --cc --exe --build sim_main.cpp sim.v
+	verilator -Wall --cc --exe --build src/sim_main.cpp src/sim.v
 
 run_sim:
 	./obj_dir/Vsim
