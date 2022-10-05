@@ -15,14 +15,14 @@ module sram_interface(
     output [2:0] sram_chip_enable,
     output sram_oe,
     output sram_clk_enable,
-    output sram_clk,
+    output sram_clk
 );
 
 // Timer registers to shift write data 2 cycles
 //reg write_in_2;
 //reg write_in_1;
-reg data_in_2 [17:0];
-reg data_in_1 [17:0];
+reg [17:0] data_in_2;
+reg [17:0] data_in_1;
 
 // Constant signals (for our purposes)
 assign sram_advload = 0;
@@ -39,21 +39,14 @@ assign sram_oe = 1'b0;
 always @(posedge clk) begin
     data_in_2 <= data_in;
     data_in_1 <= data_in_2;
-//    write_in_2 <= write_enable;
-//    write_in_1 <= write_in_2;
 
 end
-
-
-
 
 assign sram_write_enable = ~write_enable;
 assign sram_addr = addr;
 
 // control inout:
-assign sram_data <= (write_in_1)?data_in_1:18'bz;
-assign data_out <= sram_data;
-
-
+assign sram_data = (1'b0)?data_in_1:18'bz;
+assign data_out = sram_data;
 
 endmodule
