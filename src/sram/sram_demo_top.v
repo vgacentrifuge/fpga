@@ -1,5 +1,6 @@
 module sram_demo_top(
                      input clk,
+                     input reset,
                      output [19:0] sram_addr,
                      inout [17:0] sram_data,
                      output [1:0] sram_bw,
@@ -12,33 +13,33 @@ module sram_demo_top(
                      output [15:0] led
                      );
     reg [15:0] led_reg;
-    wire [31:0] counter_val
+    reg [31:0] counter_val;
     wire [17:0] sram_data;
-    wire reset;
+    wire [19:0] addr;
 
     sram_interface sram(
-        .clk(counter_val[27])
-        .addr(addr)
-        .data_in(18'b0)
-        .data_out(sram_data)
-        .write_enable(1'b0)
-        .sram_addr(sram_addr)
-        .sram_data(sram_data)
-        .sram_bw(sram_bw)
-        .sram_advload(sram_advload)
-        .sram_write_enable(sram_we)
-        .sram_chip_enable(sram_ce)
-        .sram_oe(sram_oe)
-        .sram_clk_enable(sram_cen)
+        .clk(counter_val[27]),
+        .addr(addr),
+        .data_in(18'b0),
+        .data_out(sram_data),
+        .write_enable(1'b0),
+        .sram_addr(sram_addr),
+        .sram_data(sram_data),
+        .sram_bw(sram_bw),
+        .sram_advload(sram_advload),
+        .sram_write_enable(sram_we),
+        .sram_chip_enable(sram_ce),
+        .sram_oe(sram_oe),
+        .sram_clk_enable(sram_cen),
         .sram_clk(sram_clk)
     );
 
-    counter addr_counter(
-        .clk(clk),
-        .reset(reset),
-        .double(1'b0),
-        .value(counter_val)
-    );
+    always @(posedge clk) begin
+        if (~reset)
+            counter_val <= 0;
+        else
+            counter_val <= counter_val + 2;
+    end
 
     always @(posedge counter_val[27]) begin
         led_reg <= sram_data[15:0];
