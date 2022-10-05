@@ -11,14 +11,13 @@ module sram_demo_top(
                      output sram_clk,
                      output [15:0] led
                      );
-    reg [19:0] addr;
     reg [15:0] led_reg;
     wire [31:0] counter_val
     wire [17:0] sram_data;
     wire reset;
 
     sram_interface sram(
-        .clk(clk)
+        .clk(counter_val[27])
         .addr(addr)
         .data_in(18'b0)
         .data_out(sram_data)
@@ -41,11 +40,12 @@ module sram_demo_top(
         .value(counter_val)
     );
 
-    always @(posedge clk) begin
-        addr [19:0] <= counter_val[31:12];
+    always @(posedge counter_val[27]) begin
         led_reg <= sram_data[15:0];
     end
 
     assign led = led_reg;
+    assign addr[3:0] = counter_val[31:28];
+    assign addr[19:4] = 16'b0;
 
 endmodule
