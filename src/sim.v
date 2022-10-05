@@ -1,5 +1,3 @@
-`include "counter.v"
-
 module sim(input clk,
            input reset,
            output reg [31:0] value);

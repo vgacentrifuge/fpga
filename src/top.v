@@ -1,17 +1,20 @@
-`include "counter.v"
-
 module top(input clk,
-           output [7:0] LED);
-    wire [31:0] counter_val;
-    wire reset;
+           output [2:0] pixel,
+           output hsync_out,
+           output vsync_out);
     
-    counter led_counter (
+    wire vga_clk;
+    
+    clock_divider clock_divider(
     .clk(clk),
-    .reset(reset),
-    .double(1'b0),
-    .value(counter_val)
+    .vga_clk(vga_clk)
     );
     
-    assign LED   = counter_val[30:23];
-    assign reset = counter_val[31];
+    vgademo_top vgademo(
+    .clk(vga_clk),
+    .pixel(pixel),
+    .hsync_out(hsync_out),
+    .vsync_out(vsync_out)
+    );
+        
 endmodule
