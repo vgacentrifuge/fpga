@@ -1,5 +1,3 @@
-`include "./hvsync_generator.v"
-
 module vgademo_top(input clk,
                    output reg [2:0] pixel,
                    output hsync_out,
