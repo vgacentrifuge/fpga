@@ -16,5 +16,5 @@ module top(input clk,
     .hsync_out(hsync_out),
     .vsync_out(vsync_out)
     );
-        
+    
 endmodule
