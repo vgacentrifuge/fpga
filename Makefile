@@ -1,5 +1,7 @@
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
 
+.PHONY: format build_sim run_sim
+
 format: $(SRC)
 	for file in $^ ; do \
 		java -jar format/verilog-format.jar -f $$file -s format/verilog-format.properties ; \
