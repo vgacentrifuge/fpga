@@ -17,9 +17,7 @@ module sram_interface(input clk,
     assign sram_advload     = 0;
     assign sram_chip_enable = 3'b010;
     assign sram_clk_enable  = 0 ;
-    assign sram_clk         = clk;
     assign sram_bw          = 2'b0;
-    assign sram_oe          = 1'b0;
 
 
 
@@ -32,7 +30,7 @@ module sram_interface(input clk,
 
     // Latch register to store data till next sram negedge
     reg [19:0] addr_latch;
-    reg write_latch;
+    reg we_latch;
     reg [17:0] data_latch;
     // Holding addr on sram
     reg [19:0] addr_hold;
@@ -43,6 +41,8 @@ module sram_interface(input clk,
     reg we_wait_2;
     reg [17:0] data_hold;
     reg we_hold;
+    // hold output
+    reg [17:0] out_latch;
     
     // Latch data on sram_posedge
     always @(posedge sram_clk) begin
@@ -66,10 +66,11 @@ module sram_interface(input clk,
 
     
     assign sram_write_enable = ~we_hold;
+    assign sram_oe           =  we_hold;
     assign sram_addr         = addr_hold;
     
     // control inout:
     assign sram_data = (we_hold)?data_hold:18'bz;
-    assign data_out  = sram_data;
+    assign data_out  = out_latch;
     
 endmodule
