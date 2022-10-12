@@ -38,7 +38,7 @@ module sram_demo_top(input clk,
     );
     
     always @(posedge clk) begin
-        if (~reset)
+        if (reset)
             counter_val <= 0;
         else
             counter_val <= counter_val + 1;
