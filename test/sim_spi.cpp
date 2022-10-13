@@ -35,8 +35,8 @@ void verify_byte(uint8_t byte) {
     uint8_t byte_in = 0;
     bool ready = false;
 
-    while (clock_index <= (CLK_PERIOD * 16 + 8)) {
-        top->clk = clock_index++ % 2;
+    while (clock_index <= (CLK_PERIOD * 16)) {
+        top->clk = ++clock_index % 2;
 
         if (clock_index % CLK_PERIOD == 0) {
             top->spi_ss = 0;
@@ -50,7 +50,12 @@ void verify_byte(uint8_t byte) {
 
         top->eval();
 
-        if (top->byte_ready) {
+        if (top->byte_ready && top->clk) {
+            if (ready) {
+                std::cout << "ERROR: byte_ready was asserted twice" << std::endl;
+                exit(1);
+            }
+
             ready = true;
             byte_in = top->byte_out;
         }

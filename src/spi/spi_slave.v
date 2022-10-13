@@ -19,9 +19,9 @@ module spi_slave (input clk,
     wire spi_clk_negedge = spi_clk_sr[2:1] == 2'b10;
     
     // Check if the slave select line just became high
-    //reg [1:0] spi_ss_sr;
+    // reg [1:0] spi_ss_sr;
     // always @ (posedge clk)
-    //    spi_ss_sr <= {spi_ss_sr[0], spi_ss};
+    //     spi_ss_sr <= {spi_ss_sr[0], spi_ss};
     
     wire spi_active = ~spi_ss;
     // Slave select is active low, so signals are inverted here
@@ -30,6 +30,7 @@ module spi_slave (input clk,
     
     reg [2:0] counter;
     reg [7:0] data_in;
+    reg data_ready;
     reg data_out;
     
     always @ (posedge clk) begin
@@ -48,8 +49,15 @@ module spi_slave (input clk,
             end
         end
     end
+
+    always @ (posedge clk) begin
+        data_ready <= counter == 3'b111 && spi_clk_posedge && spi_active;
+        if (counter == 3'b111 && spi_clk_posedge && spi_active) begin
+            $display("Received byte: %b", data_in);
+        end
+    end
                 
-    assign byte_ready = (counter == 3'b000) && spi_clk_negedge && spi_active; // Use negedge so its only high for 1 cycle
+    assign byte_ready = data_ready;
     assign byte_out   = data_in;
     assign spi_miso   = data_out;
 endmodule
