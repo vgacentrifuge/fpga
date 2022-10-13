@@ -11,12 +11,12 @@ module spi_slave (input clk,
                   output byte_ready);
     // Store the state of the SPI clock in a register so we can check states to
     // determine if there is a falling/rising edge
-    reg [2:0] spi_clk_sr;
+    reg [1:0] spi_clk_sr;
     always @ (posedge clk)
-        spi_clk_sr <= {spi_clk_sr[1:0], spi_clk};
+        spi_clk_sr <= {spi_clk_sr[0], spi_clk};
     
-    wire spi_clk_posedge = spi_clk_sr[2:1] == 2'b01;
-    wire spi_clk_negedge = spi_clk_sr[2:1] == 2'b10;
+    wire spi_clk_posedge = ~spi_clk_sr[1] && spi_clk_sr[0];
+    wire spi_clk_negedge = spi_clk_sr[1] && ~spi_clk_sr[0];
     
     // Check if the slave select line just became high
     // reg [1:0] spi_ss_sr;
@@ -28,18 +28,18 @@ module spi_slave (input clk,
     // wire spi_ss_posedge = spi_ss_sr[1] & ~spi_ss_sr[0];
     // wire spi_ss_negedge = ~spi_ss_sr[1] & spi_ss_sr[0];
     
-    reg [2:0] counter;
+    reg [3:0] counter;
     reg [7:0] data_in;
     reg data_ready;
     reg data_out;
     
     always @ (posedge clk) begin
         if (~spi_active) begin
-            counter <= 3'b000; // Reset counter when there is no message
+            counter <= 4'b000; // Reset counter when there is no message
         end else begin
             if (spi_clk_posedge)
             begin
-                counter <= counter + 3'b001;
+                counter <= counter + 4'b0001;
                 data_in <= {data_in[6:0], spi_mosi};
             end
             else
@@ -51,7 +51,8 @@ module spi_slave (input clk,
     end
 
     always @ (posedge clk) begin
-        data_ready <= counter == 3'b111 && spi_clk_posedge && spi_active;
+        data_ready <= counter == 4'b1000 && spi_clk_negedge && spi_active;
+        if (data_ready) counter <= 4'b0000;
     end
                 
     assign byte_ready = data_ready;

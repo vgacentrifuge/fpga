@@ -35,12 +35,13 @@ void verify_byte(uint8_t byte) {
     uint8_t byte_in = 0;
     bool ready = false;
 
-    while (clock_index <= (CLK_PERIOD * 16)) {
+    while (clock_index <= (CLK_PERIOD * 16 + 8)) {
         top->clk = ++clock_index % 2;
 
         if (clock_index % CLK_PERIOD == 0) {
             top->spi_ss = 0;
             top->spi_clk = (clock_index / CLK_PERIOD) % 2;
+            
             if (top->spi_clk) {
                 top->spi_mosi = (byte >> byte_pos) & 1;
                 std::cout << "Bit pos: " << (int) byte_pos << " MOSI: " << (int) top->spi_mosi << std::endl; 
