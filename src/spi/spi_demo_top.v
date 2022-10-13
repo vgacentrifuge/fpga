@@ -10,6 +10,7 @@ module spi_demo_top(
 );
     wire [7:0] byte_out;
     wire byte_ready;
+
     spi_slave spi(
         .clk(clk),
         .spi_clk(spi_clk),
@@ -22,15 +23,13 @@ module spi_demo_top(
     
     reg [2:0] led_reg;
 
-    always @(posedge clk) begin
-        if (byte_ready) begin
-            case (byte_out)
-                8'b00000001,
-                8'b00000010,
-                8'b00000100: led_reg <= led_reg | byte_out[2:0];
-                default: led_reg <= 3'b0;
-            endcase
-        end
+    always @(posedge byte_ready) begin
+        case (byte_out)
+            8'b00000001,
+            8'b00000010,
+            8'b00000100: led_reg <= led_reg | byte_out[2:0];
+            8'b00001000: led_reg <= 3'b0;
+        endcase
     end
 
     assign led = led_reg;
