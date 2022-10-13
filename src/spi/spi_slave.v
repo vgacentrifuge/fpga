@@ -11,12 +11,12 @@ module spi_slave (input clk,
                   output byte_ready);
     // Store the state of the SPI clock in a register so we can check states to
     // determine if there is a falling/rising edge
-    reg [1:0] spi_clk_sr;
+    reg [2:0] spi_clk_sr;
     always @ (posedge clk)
-        spi_clk_sr <= {spi_clk_sr[0], spi_clk};
+        spi_clk_sr <= {spi_clk_sr[1:0], spi_clk};
     
-    wire spi_clk_posedge = ~spi_clk_sr[1] & spi_clk_sr[0];
-    wire spi_clk_negedge = spi_clk_sr[1] & ~spi_clk_sr[0];
+    wire spi_clk_posedge = spi_clk_sr[2:1] == 2'b01;
+    wire spi_clk_negedge = spi_clk_sr[2:1] == 2'b10;
     
     // Check if the slave select line just became high
     //reg [1:0] spi_ss_sr;
