@@ -12,36 +12,65 @@ module sram_interface(input clk,
                       output sram_oe,
                       output sram_clk_enable,
                       output sram_clk);
-    
-    // Timer registers to shift write data 2 cycles
-    //reg write_in_2;
-    //reg write_in_1;
-    reg [17:0] data_in_2;
-    reg [17:0] data_in_1;
-    
+
     // Constant signals (for our purposes)
     assign sram_advload     = 0;
     assign sram_chip_enable = 3'b010;
     assign sram_clk_enable  = 0 ;
-    assign sram_clk         = clk;
     assign sram_bw          = 2'b0;
-    assign sram_oe          = 1'b0;
-    
-    // issue read/write
-    
-    
-    
+
+
+
+    //SRAM clk:
+    reg [1:0] counter_val;
+    assign sram_clk = counter_val[1];
     always @(posedge clk) begin
-        data_in_2 <= data_in;
-        data_in_1 <= data_in_2;
-        
+        counter_val <= counter_val + 1;
     end
+
+    // Latch register to store data till next sram negedge
+    reg [19:0] addr_latch;
+    reg we_latch;
+    reg [17:0] data_latch;
+    // Holding addr on sram
+    reg [19:0] addr_hold;
+    // offsetting data and write_enable two cycles 
+    reg [17:0] data_wait_1;
+    reg we_wait_1;
+    reg [17:0] data_wait_2;
+    reg we_wait_2;
+    reg [17:0] data_hold;
+    reg we_hold;
+    // hold output
+    reg [17:0] out_latch;
     
-    assign sram_write_enable = ~write_enable;
-    assign sram_addr         = addr;
+    // Latch data on sram_posedge
+    always @(posedge sram_clk) begin
+        addr_latch <= addr;
+        we_latch <= write_enable;
+        data_latch <= data_in;
+        // latch output
+        out_latch <= sram_data;
+    end
+    // place onto sram on negedge, shift registers forward one tick
+    always @(negedge sram_clk) begin 
+        addr_hold <= addr_latch;
+        data_wait_1 <= data_latch;
+        data_wait_2 <= data_wait_1;
+        data_hold <= data_wait_2;
+        we_wait_1 <= we_latch;
+        we_wait_2 <= we_wait_1;
+        we_hold <= we_wait_2;
+    end
+
+
+    
+    assign sram_write_enable = ~we_hold;
+    assign sram_oe           =  we_hold;
+    assign sram_addr         = addr_hold;
     
     // control inout:
-    assign sram_data = (1'b0)?data_in_1:18'bz;
-    assign data_out  = sram_data;
+    assign sram_data = (we_hold)?data_hold:18'bz;
+    assign data_out  = out_latch;
     
 endmodule
