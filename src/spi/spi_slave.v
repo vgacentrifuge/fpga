@@ -28,19 +28,22 @@ module spi_slave (input clk,
     // wire spi_ss_posedge = spi_ss_sr[1] & ~spi_ss_sr[0];
     // wire spi_ss_negedge = ~spi_ss_sr[1] & spi_ss_sr[0];
     
-    reg [3:0] counter;
+    reg [2:0] counter;
     reg [7:0] data_in;
     reg data_ready;
     reg data_out;
     
     always @ (posedge clk) begin
+        data_ready <= 0;
+
         if (~spi_active) begin
-            counter <= 4'b000; // Reset counter when there is no message
+            counter <= 3'b000; // Reset counter when there is no message
         end else begin
             if (spi_clk_posedge)
             begin
-                counter <= counter + 4'b0001;
+                counter <= counter + 3'b001;
                 data_in <= {data_in[6:0], spi_mosi};
+                data_ready <= counter == 3'b111;
             end
             else
             begin
@@ -48,11 +51,6 @@ module spi_slave (input clk,
                     data_out <= spi_active; // Just write back one to let MCU know we are reading
             end
         end
-    end
-
-    always @ (posedge clk) begin
-        data_ready <= counter == 4'b1000 && spi_clk_negedge && spi_active;
-        if (data_ready) counter <= 4'b0000;
     end
                 
     assign byte_ready = data_ready;
