@@ -6,7 +6,7 @@ module spi_demo_top(
     input spi_ss,
     input spi_mosi,
     output spi_miso,
-    output [2:0] led
+    output [7:0] led
 );
     wire [7:0] byte_out;
     wire byte_ready;
@@ -21,15 +21,10 @@ module spi_demo_top(
         .byte_ready(byte_ready)
     );
     
-    reg [2:0] led_reg;
+    reg [7:0] led_reg;
 
-    always @(posedge byte_ready) begin
-        case (byte_out)
-            8'b00000001,
-            8'b00000010,
-            8'b00000100: led_reg <= led_reg | byte_out[2:0];
-            8'b00001000: led_reg <= 3'b0;
-        endcase
+    always @(posedge clk) begin
+        if (byte_ready) led_reg <= byte_out;
     end
 
     assign led = led_reg;
