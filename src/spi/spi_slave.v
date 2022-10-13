@@ -52,9 +52,6 @@ module spi_slave (input clk,
 
     always @ (posedge clk) begin
         data_ready <= counter == 3'b111 && spi_clk_posedge && spi_active;
-        if (counter == 3'b111 && spi_clk_posedge && spi_active) begin
-            $display("Received byte: %b", data_in);
-        end
     end
                 
     assign byte_ready = data_ready;
