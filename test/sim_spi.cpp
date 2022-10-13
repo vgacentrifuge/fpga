@@ -32,7 +32,10 @@ void verify_byte(uint8_t byte) {
     top->spi_ss = 1;
     top->eval();
 
-    while (clock_index <= (CLK_PERIOD * 16)) {
+    uint8_t byte_in = 0;
+    bool ready = false;
+
+    while (clock_index <= (CLK_PERIOD * 16 + 8)) {
         top->clk = clock_index++ % 2;
 
         if (clock_index % CLK_PERIOD == 0) {
@@ -46,12 +49,17 @@ void verify_byte(uint8_t byte) {
         }
 
         top->eval();
+
+        if (top->byte_ready) {
+            ready = true;
+            byte_in = top->byte_out;
+        }
     }
 
-    if (top->byte_ready) {
-        std::bitset<8> bits_read(top->byte_out);
+    if (ready) {
+        std::bitset<8> bits_read(byte_in);
         std::bitset<8> bits_expected(byte);
-        std::cout << "Byte ready: " << (int)top->byte_out << " (Bits: "  << bits_read << ")" << std::endl;
+        std::cout << "Byte ready: " << (int)byte_in << " (Bits: "  << bits_read << ")" << std::endl;
         std::cout << "Expected byte: " << (int)byte << " (Bits: " << bits_expected << ")" << std::endl;
     } else {
         std::cout << "Byte not ready" << std::endl;
