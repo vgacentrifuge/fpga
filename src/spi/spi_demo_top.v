@@ -1,4 +1,4 @@
-`include "src/spi/spi_slave.v"
+//`include "src/spi/spi_slave.v"
 
 module spi_demo_top(
     input clk,
