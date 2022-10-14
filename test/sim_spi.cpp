@@ -5,7 +5,7 @@
 
 #include "Vspi_slave.h"
 
-const uint64_t CLK_PERIOD = 10;
+const uint64_t CLK_PERIOD = 1000;
 
 Vspi_slave *top;
 
@@ -14,22 +14,12 @@ uint64_t main_time = 0;
 double sc_time_stamp() { return main_time; }
 
 void verify_byte(uint8_t byte) {
-    /*
-    input clk,
-                     input spi_clk,
-                     input spi_ss,
-                     input spi_mosi,
-                     output spi_miso,
-                     output [7:0] byte_out,
-                     output byte_ready
-    */
-
     int8_t byte_pos = 7;
     uint64_t clock_index = 0;
 
-    top->spi_clk = 0;
+    top->hw_spi_clk = 0;
     top->clk = 0;
-    top->spi_ss = 1;
+    top->hw_spi_ss = 1;
     top->eval();
 
     uint8_t byte_in = 0;
@@ -39,12 +29,13 @@ void verify_byte(uint8_t byte) {
         top->clk = ++clock_index % 2;
 
         if (clock_index % CLK_PERIOD == 0) {
-            top->spi_ss = 0;
-            top->spi_clk = (clock_index / CLK_PERIOD) % 2;
-            
-            if (top->spi_clk) {
-                top->spi_mosi = (byte >> byte_pos) & 1;
-                std::cout << "Bit pos: " << (int) byte_pos << " MOSI: " << (int) top->spi_mosi << std::endl; 
+            top->hw_spi_ss = 0;
+            top->hw_spi_clk = (clock_index / CLK_PERIOD) % 2;
+
+            if (top->hw_spi_clk) {
+                top->hw_spi_mosi = (byte >> byte_pos) & 1;
+                std::cout << "Bit pos: " << (int)byte_pos
+                          << " MOSI: " << (int)top->hw_spi_mosi << std::endl;
                 byte_pos--;
             }
         }
@@ -53,7 +44,8 @@ void verify_byte(uint8_t byte) {
 
         if (top->byte_ready && top->clk) {
             if (ready) {
-                std::cout << "ERROR: byte_ready was asserted twice" << std::endl;
+                std::cout << "ERROR: byte_ready was asserted twice"
+                          << std::endl;
                 exit(1);
             }
 
@@ -62,13 +54,23 @@ void verify_byte(uint8_t byte) {
         }
     }
 
+    std::bitset<8> bits_expected(byte);
+    std::cout << "Expected byte: " << (int)byte << " (Bits: " << bits_expected
+              << ")" << std::endl;
+
     if (ready) {
         std::bitset<8> bits_read(byte_in);
-        std::bitset<8> bits_expected(byte);
-        std::cout << "Byte ready: " << (int)byte_in << " (Bits: "  << bits_read << ")" << std::endl;
-        std::cout << "Expected byte: " << (int)byte << " (Bits: " << bits_expected << ")" << std::endl;
+        std::cout << "Byte ready: " << (int)byte_in << " (Bits: " << bits_read
+                  << ")" << std::endl;
+
+        if (byte_in != byte) {
+            std::cout << "ERROR: byte read does not match expected byte"
+                      << std::endl;
+            exit(1);
+        }
     } else {
         std::cout << "Byte not ready" << std::endl;
+        exit(1);
     }
 }
 
