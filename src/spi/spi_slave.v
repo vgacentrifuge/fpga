@@ -21,8 +21,14 @@ module spi_slave (input clk,
     wire spi_clk_posedge = ~spi_clk_state && spi_clk_history == 8'hFF;
     wire spi_clk_negedge = spi_clk_state && spi_clk_history == 8'h00;
     
-    // Remap for active high on the SPI slave select
-    wire spi_active = ~hw_spi_ss;
+    // We were experiencing some issues with it sometimes missing messages. Suspect
+    // this is due to noise on the SPI slave select line, so we use this buffer to
+    // make it very biased towards remaining active
+    reg [7:0] spi_ss_history;
+    always @ (posedge clk)
+        spi_ss_history <= {spi_ss_history[6:0], hw_spi_ss};
+    
+    wire spi_active = spi_ss_history != 8'hFF;
     
     reg [2:0] counter;
     reg [7:0] data_in;
