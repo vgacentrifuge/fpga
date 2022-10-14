@@ -37,9 +37,11 @@ module spi_slave (input clk,
             counter <= 3'b000; // Reset counter when there is no message
         end else if (spi_clk_posedge) begin
             spi_clk_state <= 1'b1;
-            counter <= counter + 3'b001;
             data_in <= {data_in[6:0], hw_spi_mosi};
+            
+            // If counter now rolls over, a byte is ready in data_in
             data_ready <= counter == 3'b111;
+            counter <= counter + 3'b001;
         end else if (spi_clk_negedge) begin
             data_out <= spi_active; // Just write back one to let MCU know we are reading
             spi_clk_state <= 1'b0;
