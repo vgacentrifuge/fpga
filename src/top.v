@@ -1,3 +1,8 @@
+/*
+ * Main top module for the entire project. This module instantiates all other
+ * modules and connects them together.
+ */
+
 // All the ports here are hardware ports
 module top(input gclk100,
     
