@@ -55,8 +55,7 @@ module dac_handle(
         end
         else
         begin
-            // Set to black if the pixel is not in the display area, or if it doesn't align
-            // with the DAC position.
+            // Set to black if the pixel is not in the display area as a safeguard
             hw_colour_bus <= 16'b0;
         end
     end
