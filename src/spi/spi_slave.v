@@ -28,10 +28,13 @@ module spi_slave (input clk,
     always @ (posedge clk)
         spi_ss_history <= {spi_ss_history[6:0], hw_spi_ss};
     
+    // If any bit is low, consider it active. Being active for 1 cycle even if we
+    // shouldn't be will not cause any issues. Being inactive for 1 cycle where we
+    // should be active will cause big issues
     wire spi_active = spi_ss_history != 8'hFF;
     
     reg [2:0] counter;
-    reg [7:0] data_in;
+    reg [7:0] data_in;  
     reg data_ready;
     reg data_out;
     
