@@ -65,8 +65,8 @@ set_property -dict { PACKAGE_PIN N2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_por
 set_property -dict { PACKAGE_PIN N1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[13]}]
 set_property -dict { PACKAGE_PIN M2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[14]}]
 set_property -dict { PACKAGE_PIN M1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[15]}]
-set_property -dict { PACKAGE_PIN L5 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports hsync_out_0]
-set_property -dict { PACKAGE_PIN T4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports vsync_out_0]
+set_property -dict { PACKAGE_PIN L5 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports vsync_out_0]
+set_property -dict { PACKAGE_PIN T4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports hsync_out_0]
 set_property -dict { PACKAGE_PIN L4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports dacclk_out_0]
 
 create_interface sram_cy7c_0
