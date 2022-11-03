@@ -1,0 +1,9 @@
+{
+	"version": "1.0",
+	"modules": {
+		"pixel_FIFO_adc": {
+			"proto_instances": {
+			}
+		}
+	}
+}
