@@ -12,6 +12,7 @@ module sram_interface(
                       input read_enable,
                       input [19:0] r_addr,
                       output [17:0] data_out,
+                      output data_ready, // If read is issued, active when data is available
                       // Write line, eventual write guaranteed, but may be issued a cycle later if read conflicts
                       input write_enable,
                       input [19:0] w_addr,
@@ -49,6 +50,7 @@ module sram_interface(
     reg we_hold;
     // hold output
     reg [17:0] out_latch;
+    reg data_ready_latch;
     // Write wait register, if line is occupied
     reg [19:0] w_addr_wait;
     reg [17:0] w_data_wait;
@@ -78,6 +80,7 @@ module sram_interface(
         end
         // latch output
         out_latch <= sram_data;
+        data_ready <= ~write_enable;
     end
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
