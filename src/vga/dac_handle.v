@@ -1,5 +1,5 @@
-`include "src/signal_half_delay.v"
-`include "src/vga/hvsync_generator.v"
+//`include "src/signal_half_delay.v"
+//`include "src/vga/hvsync_generator.v"
 
 module dac_handle(
     input clk25, // 25 MHz clock
@@ -21,7 +21,7 @@ module dac_handle(
     output hw_vsync_out,
     output hw_dacclk_out
 );
-    reg in_display_area;
+    wire in_display_area;
 
     wire hsync_gen;
     wire vsync_gen;
@@ -39,6 +39,7 @@ module dac_handle(
     );
 
     hvsync_generator hvsync_generator(
+        .clk(clk25),
         .pixel_position_x(pixel_x),
         .pixel_position_y(pixel_y),
         .hw_vga_h_sync(hsync_gen),

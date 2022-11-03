@@ -5,11 +5,33 @@
 
 
 # Clock signal
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {divider/clk_wiz_0/inst/clk_in1_clock_divider_clk_wiz_0_0}]
 
-set_property -dict { PACKAGE_PIN E3    IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=gclk[100]
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk}];
+set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33 DIRECTION IN} [get_ports gclk100]
+create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports gclk100]
 
 
+create_interface dac_ths8136_0
+set_property INTERFACE dac_ths8136_0 [get_ports { colour_bus_2[0] colour_bus_2[1] colour_bus_2[2] colour_bus_2[3] colour_bus_2[4] colour_bus_2[5] colour_bus_2[6] colour_bus_2[7] colour_bus_2[8] colour_bus_2[9] colour_bus_2[10] colour_bus_2[11] colour_bus_2[12] colour_bus_2[13] colour_bus_2[14] colour_bus_2[15] hsync_out_0 vsync_out_0 dacclk_out_0 }]
+set_property -dict { PACKAGE_PIN R1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[0]}]
+set_property -dict { PACKAGE_PIN R2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[1]}]
+set_property -dict { PACKAGE_PIN T2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[2]}]
+set_property -dict { PACKAGE_PIN R3 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[3]}]
+set_property -dict { PACKAGE_PIN T3 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[4]}]
+set_property -dict { PACKAGE_PIN M5 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[5]}]
+set_property -dict { PACKAGE_PIN P4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[6]}]
+set_property -dict { PACKAGE_PIN N4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[7]}]
+set_property -dict { PACKAGE_PIN P3 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[8]}]
+set_property -dict { PACKAGE_PIN M4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[9]}]
+set_property -dict { PACKAGE_PIN N3 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[10]}]
+set_property -dict { PACKAGE_PIN P1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[11]}]
+set_property -dict { PACKAGE_PIN N2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[12]}]
+set_property -dict { PACKAGE_PIN N1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[13]}]
+set_property -dict { PACKAGE_PIN M2 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[14]}]
+set_property -dict { PACKAGE_PIN M1 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports {colour_bus_2[15]}]
+set_property -dict { PACKAGE_PIN L5 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports vsync_out_0]
+set_property -dict { PACKAGE_PIN T4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports hsync_out_0]
+set_property -dict { PACKAGE_PIN L4 IOSTANDARD LVCMOS18 DIRECTION OUT } [get_ports dacclk_out_0]
 #Switches
 
 # set_property -dict { PACKAGE_PIN A8    IOSTANDARD LVCMOS33 } [get_ports { sw[0] }]; #IO_L12N_T1_MRCC_16 Sch=sw[0]
@@ -62,23 +84,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {cl
 
 ## Pmod Header JB
 
-set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { pixel[0] }]; #IO_L11P_T1_SRCC_15 Sch=jb_p[1]
-set_property -dict { PACKAGE_PIN E16   IOSTANDARD LVCMOS33 } [get_ports { pixel[0] }]; #IO_L11N_T1_SRCC_15 Sch=jb_n[1]
-set_property -dict { PACKAGE_PIN D15   IOSTANDARD LVCMOS33 } [get_ports { pixel[0] }]; #IO_L12P_T1_MRCC_15 Sch=jb_p[2]
-set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports { pixel[0] }]; #IO_L12N_T1_MRCC_15 Sch=jb_n[2]
-set_property -dict { PACKAGE_PIN J17   IOSTANDARD LVCMOS33 } [get_ports { pixel[2] }]; #IO_L23P_T3_FOE_B_15 Sch=jb_p[3]
-set_property -dict { PACKAGE_PIN J18   IOSTANDARD LVCMOS33 } [get_ports { pixel[2] }]; #IO_L23N_T3_FWE_B_15 Sch=jb_n[3]
-set_property -dict { PACKAGE_PIN K15   IOSTANDARD LVCMOS33 } [get_ports { pixel[2] }]; #IO_L24P_T3_RS1_15 Sch=jb_p[4]
-set_property -dict { PACKAGE_PIN J15   IOSTANDARD LVCMOS33 } [get_ports { pixel[2] }]; #IO_L24N_T3_RS0_15 Sch=jb_n[4]
-
 ##Pmod Header JC
-
-set_property -dict { PACKAGE_PIN U12   IOSTANDARD LVCMOS33 } [get_ports { pixel[1] }]; #IO_L20P_T3_A08_D24_14 Sch=jc_p[1]
-set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { pixel[1] }]; #IO_L20N_T3_A07_D23_14 Sch=jc_n[1]
-set_property -dict { PACKAGE_PIN V10   IOSTANDARD LVCMOS33 } [get_ports { pixel[1] }]; #IO_L21P_T3_DQS_14 Sch=jc_p[2]
-set_property -dict { PACKAGE_PIN V11   IOSTANDARD LVCMOS33 } [get_ports { pixel[1] }]; #IO_L21N_T3_DQS_A06_D22_14 Sch=jc_n[2]
-set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports { hsync_out }]; #IO_L22P_T3_A05_D21_14 Sch=jc_p[3]
-set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports { vsync_out }]; #IO_L22N_T3_A04_D20_14 Sch=jc_n[3]
 #set_property -dict { PACKAGE_PIN T13   IOSTANDARD LVCMOS33 } [get_ports { jc[6] }]; #IO_L23P_T3_A03_D19_14 Sch=jc_p[4]
 #set_property -dict { PACKAGE_PIN U13   IOSTANDARD LVCMOS33 } [get_ports { jc[7] }]; #IO_L23N_T3_A02_D18_14 Sch=jc_n[4]
 

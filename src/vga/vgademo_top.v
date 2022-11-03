@@ -1,7 +1,7 @@
-`include "src/vga/dac_handle.v"
-`include "src/vga/pixel_counter.v"
+//`include "src/vga/dac_handle.v"
+//`include "src/vga/pixel_counter.v"
 
-module vgademo_top(input clk25,
+module vgademo_top(input gclk100,
 
                    output [15:0] colour_bus_2,
                    output hsync_out_0,
@@ -12,6 +12,12 @@ module vgademo_top(input clk25,
     wire [9:0] pixel_x;
     wire [9:0] pixel_y;
     reg [15:0] pixel;
+    
+    wire clk25;
+    clock_divider divider(
+        .clk100(gclk100),
+        .clk25(clk25)
+    );
     
     pixel_counter counter(
         .clk(clk25),
@@ -34,7 +40,7 @@ module vgademo_top(input clk25,
     always @(posedge clk25)
     begin
         if (in_display_area)
-            pixel <= {pixel_x, 6'b0};
+            pixel <= {pixel_x, pixel_y[5:0]};
         else
             pixel <= 16'h0000;
     end
