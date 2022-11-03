@@ -1,6 +1,4 @@
-module hvsync_generator(input clk25,
-                        
-                        input [9:0] pixel_position_x,
+module hvsync_generator(input [9:0] pixel_position_x,
                         input [9:0] pixel_position_y,
 
                         output hw_vga_h_sync,
@@ -15,8 +13,8 @@ module hvsync_generator(input clk25,
     
     parameter H_FRONT_PORCH = 16;
     parameter V_FRONT_PORCH = 10;
-    parameter H_BACK_PORCH  = 48;
-    parameter V_BACK_PORCH  = 33;
+    //parameter H_BACK_PORCH  = 48;
+    //parameter V_BACK_PORCH  = 33;
     
     assign in_display_area = (pixel_position_x < X_RES) && (pixel_position_y < Y_RES);
     
