@@ -21,9 +21,6 @@ module dac_handle(
     output hw_vsync_out,
     output hw_dacclk_out
 );
-    reg [9:0] dac_position_x;
-    reg [9:0] dac_position_y;
-
     reg in_display_area;
 
     wire hsync_gen;
@@ -42,7 +39,6 @@ module dac_handle(
     );
 
     hvsync_generator hvsync_generator(
-        .clk25(clk25),
         .pixel_position_x(pixel_x),
         .pixel_position_y(pixel_y),
         .hw_vga_h_sync(hsync_gen),
