@@ -1,3 +1,4 @@
+// NON-FUNCTIONAL
 module sram_demo_top(input clk,
                      input [3:0] switch,
                      input [3:0] button,

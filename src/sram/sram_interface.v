@@ -1,21 +1,36 @@
-module sram_interface(input clk,
-                      input [19:0] addr,
-                      input [17:0] data_in,
-                      input write_enable,
+/*
+ * This module wraps signals for an SRAM chip
+ * The read port guarantees data ready after 4 cycles
+ * Write port may be written independently, and will delay by a single cycle if reading is attempted at the same time
+ * Note that writing on two subsequent cycles may cause the second write to be ignored if the first is delayed by a read
+ * Reading on two subsequent cycles will also cause a write during the first cycle to be ignored
+ */
+module sram_interface(
+                      // module signals
+                      input clk,
+                      // Read line, guaranteed 4 cycle delay
+                      input read_enable,
+                      input [19:0] r_addr,
                       output [17:0] data_out,
+                      output data_ready, // If read is issued, active when data is available
+                      // Write line, eventual write guaranteed, but may be issued a cycle later if read conflicts
+                      input write_enable,
+                      input [19:0] w_addr,
+                      input [17:0] data_in,
+                      // SRAM signals
                       output [19:0] sram_addr,
                       inout [17:0] sram_data,
                       output [1:0] sram_bw,
                       output sram_advload,
                       output sram_write_enable,
-                      output [2:0] sram_chip_enable,
+                      output sram_chip_enable,
                       output sram_oe,
                       output sram_clk_enable,
                       output sram_clk);
 
     // Constant signals (for our purposes)
     assign sram_advload     = 0;
-    assign sram_chip_enable = 3'b010;
+    assign sram_chip_enable = 1;
     assign sram_clk_enable  = 0;
     assign sram_bw          = 2'b0;
 
@@ -35,14 +50,37 @@ module sram_interface(input clk,
     reg we_hold;
     // hold output
     reg [17:0] out_latch;
+    reg data_ready_latch;
+    // Write wait register, if line is occupied
+    reg [19:0] w_addr_wait;
+    reg [17:0] w_data_wait;
+    reg we_wait;
     
-    // Latch data on sram_posedge
+    // Latch data on clk posedge
     always @(posedge clk) begin
-        addr_latch <= addr;
-        we_latch <= write_enable;
-        data_latch <= data_in;
+        if (read_enable) begin
+            // Read issued, delay write by one cycle
+            addr_latch <= r_addr;
+            we_latch <= 0;
+            data_latch <= 18'b0;
+            // Delay write
+            w_addr_wait <= w_addr;
+            w_data_wait <= data_in;
+            we_wait <= write_enable;
+        end else if (we_wait) begin
+            // No read, write delayed last cycle
+            addr_latch <= w_addr_wait;
+            we_latch <= we_wait;
+            data_latch <= w_data_wait;
+        end else begin
+            // No read, write as normal
+            addr_latch <= w_addr;
+            we_latch <= write_enable;
+            data_latch <= data_in;
+        end
         // latch output
         out_latch <= sram_data;
+        data_ready_latch <= ~write_enable;
     end
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
