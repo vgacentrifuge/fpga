@@ -80,7 +80,7 @@ module sram_interface(
         end
         // latch output
         out_latch <= sram_data;
-        data_ready <= ~write_enable;
+        data_ready_latch <= ~write_enable;
     end
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
