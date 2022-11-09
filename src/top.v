@@ -47,7 +47,7 @@ module top(input gclk100,
     wire [19:0] r_addr;
     wire [19:0] w_addr;
     wire [17:0] r_pixel_data;
-    wire [15:0] w_pixel_data
+    wire [15:0] w_pixel_data;
 
     wire [15:0] output_pixel;
     wire [9:0] output_x;
