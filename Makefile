@@ -8,7 +8,10 @@ format: $(SRC)
 	done
 
 build_sim:
-	verilator -Wall --cc --exe --build src/sim_main.cpp src/sim.v
+	verilator -Wall --cc --exe --build test/sim_main.cpp src/sim.v
 
 run_sim:
 	./obj_dir/Vsim
+
+build_full_delay_sim:
+	verilator --cc --exe --build -Wall test/sim_full_delay.cpp src/signal_full_delay.v
