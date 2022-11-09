@@ -6,8 +6,7 @@ module vga_driver (
     input hw_hsync_in,
 
     output reg [17:0] fifo_write_data,
-    output reg fifo_write_request, 
-);
+    output reg fifo_write_request);
 
 // contains position of pixel at posedge
 reg [9:0] x;
@@ -55,7 +54,7 @@ always @ (posedge hw_pixel_clk) begin
         // Once x wraps around to 0, the active area begins
         h_sync_state <= 1;
     end
-    if(h_sync_state && h_sync_history == 0'b00000)
+    if(h_sync_state && h_sync_history == 5'b00000)
         h_sync_state <= 0;
 
     if(~v_sync_state && v_sync_history == 5'b11111) begin
@@ -63,7 +62,7 @@ always @ (posedge hw_pixel_clk) begin
         // Once y wraps around to 0, the active area begins
         v_sync_state <= 1;
     end
-    if(v_sync_state && v_sync_history = 5'b00000)
+    if(v_sync_state && v_sync_history == 5'b00000)
         v_sync_state <= 0;
 
     h_sync_history <= {h_sync_history[3:0], hw_hsync_in};
