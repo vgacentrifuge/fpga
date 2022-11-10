@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xA8D5159CE33B25A4",
+      "boundary_crc": "0x46730BA5293BBCF3",
       "device": "xc7a100tftg256-1",
       "name": "pixel_FIFO_dac",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
@@ -92,16 +92,16 @@
             "value": "Independent_Clocks_Builtin_FIFO"
           },
           "Input_Data_Width": {
-            "value": "36"
+            "value": "38"
           },
           "Performance_Options": {
             "value": "First_Word_Fall_Through"
           },
           "Read_Clock_Frequency": {
-            "value": "25"
+            "value": "40"
           },
           "Write_Clock_Frequency": {
-            "value": "100"
+            "value": "160"
           }
         }
       }

@@ -1,16 +1,19 @@
-module vga_driver (
+module adc_input (
     input hw_pixel_clk,
     input [15:0] hw_rgb_in,
 
     input hw_vsync_in,
     input hw_hsync_in,
 
-    output reg [17:0] fifo_write_data,
-    output reg fifo_write_request);
+    output reg [15:0] fifo_write_data,
+    output [10:0] pixel_x,
+    output [10:0] pixel_y,
+    output reg fifo_write_request
+);
 
 // contains position of pixel at posedge
-reg [9:0] x;
-reg [9:0] y;
+reg [10:0] x;
+reg [10:0] y;
 
 parameter X_RES = 800;
 parameter Y_RES = 600;
@@ -35,22 +38,27 @@ reg [4:0] v_sync_history;
 
 always @ (posedge hw_pixel_clk) begin
 
-    fifo_write_data <= 18'b0;
+    fifo_write_data <= 16'b0;
     fifo_write_request <= 1; // We always push to the fifo
 
     if(x < X_RES && y < Y_RES) begin
         // Use two MSB to signal start of new line and new column
-        fifo_write_data <= {x==0, y==0, hw_rgb_in};
+        fifo_write_data <= hw_rgb_in;
     end
-    if(x != X_RES) begin
-        // If the next pixel is on x=0, start a new line
-        if (x+1 == 0 && y != Y_RES)
+    // If the next pixel is on x=0, start a new line
+    if (x+1 == X_RES+H_FRONT_PORCH+H_SYNC+H_BACK_PORCH) begin
+        x <= 0;
+        if (y+1 == Y_RES+V_FRONT_PORCH+V_SYNC+V_BACK_PORCH) begin
+            y <= 0;
+        end else begin
             y <= y+1;
+        end
+    end else begin
         x <= x+1;
     end
-
+        
     if(~h_sync_state && h_sync_history == 5'b11111) begin
-        x <= -H_BACK_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART;
+        x <= X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART;
         // Once x wraps around to 0, the active area begins
         h_sync_state <= 1;
     end
@@ -58,7 +66,7 @@ always @ (posedge hw_pixel_clk) begin
         h_sync_state <= 0;
 
     if(~v_sync_state && v_sync_history == 5'b11111) begin
-        y <= -V_BACK_PORCH;
+        y <= Y_RES + V_SYNC + V_FRONT_PORCH;
         // Once y wraps around to 0, the active area begins
         v_sync_state <= 1;
     end
@@ -68,6 +76,10 @@ always @ (posedge hw_pixel_clk) begin
     h_sync_history <= {h_sync_history[3:0], hw_hsync_in};
     v_sync_history <= {v_sync_history[3:0], hw_vsync_in};
 end
+
+// expose pixel coordinates
+assign pixel_x = x;
+assign pixel_y = y;
 
 endmodule
 

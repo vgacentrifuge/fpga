@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Nov  3 12:42:38 2022" VIVADOVERSION="2021.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Nov 10 11:16:28 2022" VIVADOVERSION="2021.1">
 
   <SYSTEMINFO ARCH="artix7" DEVICE="7a100t" NAME="pixel_FIFO_dac" PACKAGE="ftg256" SPEEDGRADE="-1"/>
 
@@ -24,7 +24,7 @@
         <CONNECTION INSTANCE="fifo_generator_0" PORT="empty"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" LEFT="35" NAME="FIFO_READ_0_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
+    <PORT DIR="O" LEFT="37" NAME="FIFO_READ_0_rd_data" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
       <CONNECTIONS>
         <CONNECTION INSTANCE="fifo_generator_0" PORT="dout"/>
       </CONNECTIONS>
@@ -39,7 +39,7 @@
         <CONNECTION INSTANCE="fifo_generator_0" PORT="full"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="I" LEFT="35" NAME="FIFO_WRITE_0_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_din">
+    <PORT DIR="I" LEFT="37" NAME="FIFO_WRITE_0_wr_data" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_din">
       <CONNECTIONS>
         <CONNECTION INSTANCE="fifo_generator_0" PORT="din"/>
       </CONNECTIONS>
@@ -79,9 +79,9 @@
         <PARAMETER NAME="C_COUNT_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_DEFAULT_VALUE" VALUE="BlankString"/>
-        <PARAMETER NAME="C_DIN_WIDTH" VALUE="36"/>
+        <PARAMETER NAME="C_DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="C_DOUT_RST_VAL" VALUE="0"/>
-        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="36"/>
+        <PARAMETER NAME="C_DOUT_WIDTH" VALUE="38"/>
         <PARAMETER NAME="C_ENABLE_RLOCS" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="artix7"/>
         <PARAMETER NAME="C_FULL_FLAGS_RST_VAL" VALUE="0"/>
@@ -118,7 +118,7 @@
         <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_RD_DEPTH" VALUE="1024"/>
-        <PARAMETER NAME="C_RD_FREQ" VALUE="25"/>
+        <PARAMETER NAME="C_RD_FREQ" VALUE="40"/>
         <PARAMETER NAME="C_RD_PNTR_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_UNDERFLOW_LOW" VALUE="0"/>
         <PARAMETER NAME="C_USE_DOUT_RST" VALUE="0"/>
@@ -132,7 +132,7 @@
         <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
         <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_WR_DEPTH" VALUE="1024"/>
-        <PARAMETER NAME="C_WR_FREQ" VALUE="100"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="160"/>
         <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
         <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
@@ -283,9 +283,9 @@
         <PARAMETER NAME="INTERFACE_TYPE" VALUE="Native"/>
         <PARAMETER NAME="Performance_Options" VALUE="First_Word_Fall_Through"/>
         <PARAMETER NAME="asymmetric_port_width" VALUE="false"/>
-        <PARAMETER NAME="Input_Data_Width" VALUE="36"/>
+        <PARAMETER NAME="Input_Data_Width" VALUE="38"/>
         <PARAMETER NAME="Input_Depth" VALUE="1024"/>
-        <PARAMETER NAME="Output_Data_Width" VALUE="36"/>
+        <PARAMETER NAME="Output_Data_Width" VALUE="38"/>
         <PARAMETER NAME="Output_Depth" VALUE="1024"/>
         <PARAMETER NAME="Enable_ECC" VALUE="false"/>
         <PARAMETER NAME="Use_Embedded_Registers" VALUE="false"/>
@@ -317,8 +317,8 @@
         <PARAMETER NAME="Read_Data_Count" VALUE="false"/>
         <PARAMETER NAME="Read_Data_Count_Width" VALUE="10"/>
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
-        <PARAMETER NAME="Read_Clock_Frequency" VALUE="25"/>
-        <PARAMETER NAME="Write_Clock_Frequency" VALUE="100"/>
+        <PARAMETER NAME="Read_Clock_Frequency" VALUE="40"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="160"/>
         <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
         <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="1003"/>
         <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="1002"/>
@@ -461,7 +461,7 @@
             <CONNECTION INSTANCE="External_Ports" PORT="rd_clk_0"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="35" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_din">
+        <PORT DIR="I" LEFT="37" NAME="din" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_din">
           <CONNECTIONS>
             <CONNECTION INSTANCE="pixel_FIFO_dac_imp" PORT="FIFO_WRITE_0_wr_data"/>
           </CONNECTIONS>
@@ -476,7 +476,7 @@
             <CONNECTION INSTANCE="pixel_FIFO_dac_imp" PORT="FIFO_READ_0_rd_en"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="35" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
+        <PORT DIR="O" LEFT="37" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="fifo_generator_0_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="pixel_FIFO_dac_imp" PORT="FIFO_READ_0_rd_data"/>
           </CONNECTIONS>

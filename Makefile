@@ -16,6 +16,9 @@ clean:
 sim_chroma_key: clean src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
 
+sim_full_delay: clean src/signal_full_delay.cpp test/sim_full_delay.o
+	./test/sim_full_delay.o
+
 format: $(SRC)
 	for file in $^ ; do \
 		java -jar format/verilog-format.jar -f $$file -s format/verilog-format.properties ; \
