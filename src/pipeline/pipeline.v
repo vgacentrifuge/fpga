@@ -64,7 +64,6 @@ module pipeline(
 
     // Chroma keying
     pipeline_chroma_key chroma_keyer(
-        .clk(clk),
         .enable(fg_pixel_in), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
