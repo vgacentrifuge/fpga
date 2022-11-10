@@ -8,7 +8,7 @@ INC=-I/opt/homebrew/Cellar/verilator/4.228/share/verilator/include -I/opt/homebr
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean sim_chroma_key
+.PHONY: format clean sim_chroma_key sim_full_delay
 
 clean:
 	rm -rf obj_dir test/*.o output.png
