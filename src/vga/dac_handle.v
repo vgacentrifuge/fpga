@@ -10,11 +10,11 @@ module dac_handle(
      * pixel with the hsync/vsync signals. This has to include the 
      * sync + porches sections in the count.
      */
-    input [9:0] pixel_x,
+    input [10:0] pixel_x,
     /*
      * The y position of the pixel. See more information about use above.
      */
-    input [9:0] pixel_y,
+    input [10:0] pixel_y,
 
     output reg [15:0] hw_colour_bus,
     output hw_hsync_out,
@@ -47,18 +47,33 @@ module dac_handle(
         .in_display_area(in_display_area)
     );
 
-    always @(posedge clk25)
-    begin
-        if (in_display_area)
-        begin
-            hw_colour_bus <= pixel_in;
-        end
-        else
-        begin
-            // Set to black if the pixel is not in the display area as a safeguard
+    // Position pixel starting when clk goes high
+//    reg [10:0] x;
+//    reg [10:0] y;
+//    always @(posedge clk25) begin
+//        // Set to black if the pixel is not in the display area as a safeguard
+//        hw_colour_bus <= 16'b0;
+        
+//        if (in_display_area)
+//        begin
+//            hw_colour_bus <= pixel_in;
+//        end
+        
+//        x <= x+1;
+//        if(x+1 >= 1056) begin
+//            x <= 0;
+//            y <= y+1;
+//            if(y+1 >= 628) begin
+//                y <= 0;
+//            end
+//        end
+//    end
+    always @(posedge clk25) begin
+        if (in_display_area) begin
+                hw_colour_bus <= pixel_in;
+        end else begin 
             hw_colour_bus <= 16'b0;
         end
     end
-
     assign hw_dacclk_out = clk25;
 endmodule

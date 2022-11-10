@@ -73,13 +73,13 @@ input wire wr_clk;
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 read_clk CLK" *)
 input wire rd_clk;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_write:1.0 FIFO_WRITE WR_DATA" *)
-input wire [35 : 0] din;
+input wire [37 : 0] din;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_write:1.0 FIFO_WRITE WR_EN" *)
 input wire wr_en;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_read:1.0 FIFO_READ RD_EN" *)
 input wire rd_en;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_read:1.0 FIFO_READ RD_DATA" *)
-output wire [35 : 0] dout;
+output wire [37 : 0] dout;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_write:1.0 FIFO_WRITE FULL" *)
 output wire full;
 (* X_INTERFACE_INFO = "xilinx.com:interface:fifo_read:1.0 FIFO_READ EMPTY" *)
@@ -91,9 +91,9 @@ output wire empty;
     .C_COUNT_TYPE(0),
     .C_DATA_COUNT_WIDTH(10),
     .C_DEFAULT_VALUE("BlankString"),
-    .C_DIN_WIDTH(36),
+    .C_DIN_WIDTH(38),
     .C_DOUT_RST_VAL("0"),
-    .C_DOUT_WIDTH(36),
+    .C_DOUT_WIDTH(38),
     .C_ENABLE_RLOCS(0),
     .C_FAMILY("artix7"),
     .C_FULL_FLAGS_RST_VAL(0),
@@ -130,7 +130,7 @@ output wire empty;
     .C_PROG_FULL_TYPE(0),
     .C_RD_DATA_COUNT_WIDTH(10),
     .C_RD_DEPTH(1024),
-    .C_RD_FREQ(25),
+    .C_RD_FREQ(40),
     .C_RD_PNTR_WIDTH(10),
     .C_UNDERFLOW_LOW(0),
     .C_USE_DOUT_RST(0),
@@ -144,7 +144,7 @@ output wire empty;
     .C_WR_ACK_LOW(0),
     .C_WR_DATA_COUNT_WIDTH(10),
     .C_WR_DEPTH(1024),
-    .C_WR_FREQ(100),
+    .C_WR_FREQ(160),
     .C_WR_PNTR_WIDTH(10),
     .C_WR_RESPONSE_LATENCY(1),
     .C_MSGON_VAL(1),
