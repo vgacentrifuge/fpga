@@ -36,6 +36,11 @@ void load_image(Image &image_data, const std::string &filename) {
     image_data.data = image;
 }
 
+void load_rgb_image(Image &image_data, const std::string &filename) {
+    load_image(image_data, filename);
+    convert_rgba_to_rgb(image_data);
+}
+
 void blend_pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t &r_out,
                  uint8_t &g_out, uint8_t &b_out) {
     float alpha = a / 255.0f;

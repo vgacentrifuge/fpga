@@ -1,15 +1,14 @@
-module pipeline_foreground_scale(input clk,
+module pipeline_foreground_scale 
+    #(parameter RESOLUTION_X = 800, parameter RESOLUTION_Y = 600, parameter PRECISION = 10)
+                                (input clk,
                                  input [1:0] ctrl_foreground_scale,
-                                 input [9:0] fg_offset_x,
-                                 input [9:0] fg_offset_y,
-                                 input [9:0] pixel_x,
-                                 input [9:0] pixel_y,
-                                 output reg [9:0] fg_pixel_x,
-                                 output reg [9:0] fg_pixel_y,
+                                 input [PRECISION - 1:0] fg_offset_x,
+                                 input [PRECISION - 1:0] fg_offset_y,
+                                 input [PRECISION - 1:0] pixel_x,
+                                 input [PRECISION - 1:0] pixel_y,
+                                 output reg [PRECISION - 1:0] fg_pixel_x,
+                                 output reg [PRECISION - 1:0] fg_pixel_y,
                                  output reg fg_active);
-    parameter RESOLUTION_X = 640;
-    parameter RESOLUTION_Y = 480;
-    
     wire scale_full    = ctrl_foreground_scale == 2'b11;
     wire scale_half    = ctrl_foreground_scale == 2'b10;
     wire scale_quarter = ctrl_foreground_scale == 2'b01;
@@ -39,7 +38,7 @@ module pipeline_foreground_scale(input clk,
         end
         else if (scale_quarter)
         begin
-            if (pixel_x >= RESOLUTION_X / 4 && pixel_y >= RESOLUTION_Y / 4)
+            if (pixel_x >= 3 * (RESOLUTION_X / 4) && pixel_y >= 3 * (RESOLUTION_Y / 4))
             begin
                 fg_pixel_x <= (pixel_x - RESOLUTION_X / 4) << 2;
                 fg_pixel_y <= (pixel_y - RESOLUTION_Y / 4) << 2;
