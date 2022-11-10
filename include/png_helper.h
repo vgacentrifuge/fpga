@@ -27,6 +27,8 @@ void write_image(Image &image, const std::string &filename);
 
 void load_image(Image &image_data, const std::string &filename);
 
+void load_rgb_image(Image &image_data, const std::string &filename);
+
 void convert_rgba_to_rgb(Image &image_data);
 
 #endif

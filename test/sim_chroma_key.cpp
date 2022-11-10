@@ -32,14 +32,12 @@ void run_pixel(Image& output, Image& bg, Image& fg, int x, int y) {
     output.data[index + 3] = 255;
 }
 
-void run_test_pair(const std::string &backgroundFile, const std::string &foregroundFile, const std::string &outputFile) {
+void run_test_pair(const std::string &bg_file, const std::string &fg_file, const std::string &output_file) {
     Image background;
     Image foreground;
     Image output;
-    load_image(background, backgroundFile);
-    load_image(foreground, foregroundFile);
-    convert_rgba_to_rgb(background);
-    convert_rgba_to_rgb(foreground);
+    load_rgb_image(background, bg_file);
+    load_rgb_image(foreground, fg_file);
 
     if (background.width != foreground.width || background.height != foreground.height) {
         std::cout << "Images must be the same size" << std::endl;
@@ -56,8 +54,8 @@ void run_test_pair(const std::string &backgroundFile, const std::string &foregro
         }
     }
 
-    std::cout << "Saving output to " << outputFile << std::endl;
-    write_image(output, outputFile);
+    std::cout << "Saving output to " << output_file << std::endl;
+    write_image(output, output_file);
 }
 
 int main(int argc, char **argv) {
