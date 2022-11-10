@@ -9,10 +9,13 @@ INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean sim_chroma_key sim_full_delay sim_overlay_scale
+.PHONY: format clean purge sim_chroma_key sim_full_delay sim_overlay_scale
 
 clean:
-	rm -rf obj_dir test/*.o *.png
+	rm -rf obj_dir test/*.o
+
+purge: clean	
+    rm *.png
 
 sim_chroma_key: clean src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
