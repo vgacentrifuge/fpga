@@ -1,41 +1,71 @@
 #include <verilated.h>
-
 #include <iostream>
 
 #include "Vpipeline_chroma_key.h"
-#include "lodepng.h"
+#include "../include/png_helper.h"
 
 Vpipeline_chroma_key *top;
 
-/*
-3 ways to decode a PNG from a file to RGBA pixel data (and 2 in-memory ways).
-*/
+void run_pixel(Image& output, Image& bg, Image& fg, int x, int y) {
+    int index = (y * bg.width + x) * 3;
+    uint8_t bg_r = bg.data[index + 0];
+    uint8_t bg_g = bg.data[index + 1];
+    uint8_t bg_b = bg.data[index + 2];
 
-// g++ lodepng.cpp example_decode.cpp -ansi -pedantic -Wall -Wextra -O3
+    uint8_t fg_r = fg.data[index + 0];
+    uint8_t fg_g = fg.data[index + 1];
+    uint8_t fg_b = fg.data[index + 2];
 
-// Example 1
-// Decode from disk to raw pixels with a single function call
-void decodeOneStep(const char *filename) {
-    std::vector<unsigned char> image;  // the raw pixels
-    unsigned width, height;
+    top->enable = 1;
+    top->bg_pixel_in = RGB_TO_PIX(bg_r, bg_g, bg_b);
+    top->fg_pixel_in = RGB_TO_PIX(fg_r, fg_g, fg_b);
+    top->eval();
 
-    // decode
-    unsigned error = lodepng::decode(image, width, height, filename);
+    uint8_t r = PIX_TO_R(top->pixel_out);
+    uint8_t g = PIX_TO_G(top->pixel_out);
+    uint8_t b = PIX_TO_B(top->pixel_out);
 
-    // if there's an error, display it
-    if (error) {
-        std::cout << "decoder error " << error << ": "
-                  << lodepng_error_text(error) << std::endl;
+    index = (y * bg.width + x) << 2;
+    output.data[index + 0] = r;
+    output.data[index + 1] = g;
+    output.data[index + 2] = b;
+    output.data[index + 3] = 255;
+}
+
+void run_test_pair(const std::string &backgroundFile, const std::string &foregroundFile, const std::string &outputFile) {
+    Image background;
+    Image foreground;
+    Image output;
+    load_image(background, backgroundFile);
+    load_image(foreground, foregroundFile);
+    convert_rgba_to_rgb(background);
+    convert_rgba_to_rgb(foreground);
+
+    if (background.width != foreground.width || background.height != foreground.height) {
+        std::cout << "Images must be the same size" << std::endl;
+        exit(EXIT_FAILURE);
     }
 
-    // the pixels are now in the vector "image", 4 bytes per pixel, ordered
-    // RGBARGBA..., use it as texture, draw it, ...
+    output.width = background.width;
+    output.height = background.height;
+    output.data.resize(output.width * output.height * 4);
+
+    for (int y = 0; y < background.height; y++) {
+        for (int x = 0; x < background.width; x++) {
+            run_pixel(output, background, foreground, x, y);
+        }
+    }
+
+    std::cout << "Saving output to " << outputFile << std::endl;
+    write_image(output, outputFile);
 }
 
 int main(int argc, char **argv) {
     Verilated::commandArgs(argc, argv);
 
     top = new Vpipeline_chroma_key;
+
+    run_test_pair("test/images/test_bg.png", "test/images/test_fg.png", "output.png");
 
     top->final();
     delete top;
