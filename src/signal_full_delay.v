@@ -2,7 +2,7 @@
  * Module that delays the signal by SHIFT_AMOUNT clock cycles. This is
  * done by using a shift register.
  */
-module signal_half_delay #(parameter SHIFT_AMOUNT = 4)
+module signal_full_delay #(parameter SHIFT_AMOUNT = 4)
                           (input clk,
                            input signal_in,
                            output reg signal_out

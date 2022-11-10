@@ -24,7 +24,7 @@ module pipeline(
                 input [1:0] ctrl_overlay_mode,
                 input [1:0] ctrl_fg_scale,
                 input [9:0] ctrl_fg_offset_x,
-                input [9:0] ctrl_fg_offset_y,
+                input [9:0] ctrl_fg_offset_y
                 );
     parameter FOREGROUND_FETCH_CYCLE_DELAY = 4; // The amount of cycles it takes for the foreground pixel value to be fetched
 
