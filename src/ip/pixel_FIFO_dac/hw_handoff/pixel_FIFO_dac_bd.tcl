@@ -171,13 +171,13 @@ proc create_root_design { parentCell } {
    CONFIG.Fifo_Implementation {Independent_Clocks_Builtin_FIFO} \
    CONFIG.Full_Threshold_Assert_Value {1003} \
    CONFIG.Full_Threshold_Negate_Value {1002} \
-   CONFIG.Input_Data_Width {36} \
-   CONFIG.Output_Data_Width {36} \
+   CONFIG.Input_Data_Width {38} \
+   CONFIG.Output_Data_Width {38} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {25} \
+   CONFIG.Read_Clock_Frequency {40} \
    CONFIG.Reset_Type {Asynchronous_Reset} \
    CONFIG.Use_Dout_Reset {false} \
-   CONFIG.Write_Clock_Frequency {100} \
+   CONFIG.Write_Clock_Frequency {160} \
  ] $fifo_generator_0
 
   # Create interface connections
