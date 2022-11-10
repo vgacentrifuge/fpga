@@ -1,6 +1,7 @@
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
-CPP=include/lodepng/lodepng.cpp include/png_helper.cpp /opt/homebrew/Cellar/verilator/4.228/share/verilator/include/verilated.cpp $(wildcard obj_dir/*.cpp)
-INC=-I/opt/homebrew/Cellar/verilator/4.228/share/verilator/include -I/opt/homebrew/Cellar/verilator/4.228/share/verilator/include/vltstd -Iinclude -Iinclude/lodepng -Iobj_dir
+VERILATOR_FOLDER=$(shell verilator --getenv VERILATOR_ROOT)
+CPP=include/lodepng/lodepng.cpp include/png_helper.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
+INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude -Iinclude/lodepng -Iobj_dir
 
 %.cpp: %.v
 	verilator --cc $<
