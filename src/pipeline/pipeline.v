@@ -11,8 +11,8 @@ module pipeline(
                 // Foreground coord sent to SRAM, pixel recieved
                 input  [15:0] fg_pixel_in,
                 input  fg_pixel_skip,
-                output [9:0] fg_pixel_request_x,
-                output [9:0] fg_pixel_request_x,
+                output signed [10:0] fg_pixel_request_x,
+                output signed [10:0] fg_pixel_request_x,
                 output fg_pixel_request_active,
                 
                 // Resulting pixel. Positions for sanity checks.
