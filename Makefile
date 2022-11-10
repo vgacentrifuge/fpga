@@ -14,8 +14,8 @@ INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude
 clean:
 	rm -rf obj_dir test/*.o
 
-purge: clean	
-    rm *.png
+purge: clean
+	rm *.png
 
 sim_chroma_key: clean src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
