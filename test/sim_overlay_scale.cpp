@@ -105,6 +105,14 @@ int main(int argc, char const *argv[]) {
     do_scale_run(background, foreground, "test_scale_quarter.png", 0, 0,
                  MODE_SCALE_QUARTER);
 
+    do_scale_run(background, foreground, "test_scale_offset_1.png", 100, 100,
+                 MODE_SCALE_HALF);
+    do_scale_run(background, foreground, "test_scale_offset_2.png", -200, -200,
+                 MODE_SCALE_HALF);
+    do_scale_run(background, foreground, "test_scale_offset_3.png", 500, -100,
+                 MODE_SCALE_HALF);
+    
+
     scaler->final();
     overlay->final();
     return 0;
