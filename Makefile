@@ -1,5 +1,8 @@
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
 
+%.cpp: %.v
+	verilator --cc $<
+	
 .PHONY: format build_sim run_sim
 
 format: $(SRC)
