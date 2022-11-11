@@ -2,7 +2,7 @@
 //`include "src/vga/hvsync_generator.v"
 
 module dac_handle(
-    input clk25, // 25 MHz clock
+    input pixelclk,
 
     input [15:0] pixel_in,
     /*
@@ -15,6 +15,8 @@ module dac_handle(
      * The y position of the pixel. See more information about use above.
      */
     input [10:0] pixel_y,
+    
+    input has_pixel,
 
     output reg [15:0] hw_colour_bus,
     output hw_hsync_out,
@@ -27,29 +29,29 @@ module dac_handle(
     wire vsync_gen;
 
     signal_half_delay #(.SHIFT_AMOUNT(7)) hsync_delay(
-        .clk(clk25),
+        .clk(pixelclk),
         .signal_in(hsync_gen),
-        .signal_out(hw_hsync_out)
+        .signal_out(hw_hsync_out),
+        .clamp(~has_pixel)
     );
 
     signal_half_delay #(.SHIFT_AMOUNT(7)) vsync_delay(
-        .clk(clk25),
+        .clk(pixelclk),
         .signal_in(vsync_gen),
-        .signal_out(hw_vsync_out)
+        .signal_out(hw_vsync_out),
+        .clamp(~has_pixel)
     );
 
     hvsync_generator hvsync_generator(
-        .clk(clk25),
+        .clk(pixelclk),
         .pixel_position_x(pixel_x),
         .pixel_position_y(pixel_y),
-        .hw_vga_h_sync(hsync_gen),
-        .hw_vga_v_sync(vsync_gen),
+        .vga_h_sync(hsync_gen),
+        .vga_v_sync(vsync_gen),
         .in_display_area(in_display_area)
     );
 
     // Position pixel starting when clk goes high
-//    reg [10:0] x;
-//    reg [10:0] y;
 //    always @(posedge clk25) begin
 //        // Set to black if the pixel is not in the display area as a safeguard
 //        hw_colour_bus <= 16'b0;
@@ -68,12 +70,11 @@ module dac_handle(
 //            end
 //        end
 //    end
-    always @(posedge clk25) begin
+    always @(posedge pixelclk) begin
+        hw_colour_bus <= 16'b0;
         if (in_display_area) begin
-                hw_colour_bus <= pixel_in;
-        end else begin 
-            hw_colour_bus <= 16'b0;
+            hw_colour_bus <= pixel_in;
         end
     end
-    assign hw_dacclk_out = clk25;
+    assign hw_dacclk_out = pixelclk;
 endmodule
