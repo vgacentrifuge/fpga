@@ -1,40 +1,44 @@
-module pipeline(
+module pipeline #(
+    parameter PIXEL_SIZE = 16,
+    parameter PRECISION = 10,
+    parameter FOREGROUND_FETCH_CYCLE_DELAY = 4 // The amount of cycles it takes for the foreground pixel value to be fetched
+) (
                 input clk,
 
                 // The input position of the current pixel
-                input [9:0] pixel_x,
-                input [9:0] pixel_y,
+                input [PRECISION - 1:0] pixel_x,
+                input [PRECISION - 1:0] pixel_y,
 
-                input [15:0] bg_pixel_in,
+                input [PIXEL_SIZE - 1:0] bg_pixel_in,
                 input output_enable, // Whether we are blanking screen
 
                 // Foreground coord sent to SRAM, pixel recieved
-                input  [15:0] fg_pixel_in,
+                input  [PIXEL_SIZE - 1:0] fg_pixel_in,
                 input  fg_pixel_skip,
-                output signed [10:0] fg_pixel_request_x,
-                output signed [10:0] fg_pixel_request_x,
+                output signed [PRECISION:0] fg_pixel_request_x,
+                output signed [PRECISION:0] fg_pixel_request_y,
                 output fg_pixel_request_active,
                 
                 // Resulting pixel. Positions for sanity checks.
-                output reg [15:0] pixel_out,
-                output reg [9:0] pixel_x_out,
-                output reg [9:0] pixel_y_out,
+                output reg [PIXEL_SIZE - 1:0] pixel_out,
+                output reg [PRECISION - 1:0] pixel_x_out,
+                output reg [PRECISION - 1:0] pixel_y_out,
 
                 // Control signals:
                 input [1:0] ctrl_overlay_mode,
                 input [1:0] ctrl_fg_scale,
-                input [9:0] ctrl_fg_offset_x,
-                input [9:0] ctrl_fg_offset_y
+                input signed [PRECISION:0] ctrl_fg_offset_x,
+                input signed [PRECISION:0] ctrl_fg_offset_y
                 );
-    parameter FOREGROUND_FETCH_CYCLE_DELAY = 4; // The amount of cycles it takes for the foreground pixel value to be fetched
-
     // Buffers while we wait for foreground pixel
-    reg [(15 * FOREGROUND_FETCH_CYCLE_DELAY):0] bg_pixel_buffer;
-    reg [(9 * FOREGROUND_FETCH_CYCLE_DELAY):0] bg_pixel_x_buffer;
-    reg [(9 * FOREGROUND_FETCH_CYCLE_DELAY):0] bg_pixel_y_buffer;
+    reg [PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_buffer;
+    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_x_buffer;
+    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_y_buffer;
 
     // Handle foreground fetching
-    pipeline_foreground_scale fg_fetcher(
+    pipeline_foreground_scale #(
+        .PRECISION(PRECISION)
+    ) fg_fetcher(
         .clk(clk),
         .ctrl_foreground_scale(ctrl_fg_scale),
         .fg_offset_x(ctrl_fg_offset_x),
@@ -49,22 +53,22 @@ module pipeline(
     // Assuming here that a new pixel is ready every clock cycle
     always @(posedge clk)
     begin
-        bg_pixel_buffer <= {bg_pixel_buffer[15 * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], bg_pixel_in};
-        bg_pixel_x_buffer <= {bg_pixel_x_buffer[9 * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_x};
-        bg_pixel_y_buffer <= {bg_pixel_y_buffer[9 * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_y};
+        bg_pixel_buffer <= {bg_pixel_buffer[PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], bg_pixel_in};
+        bg_pixel_x_buffer <= {bg_pixel_x_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_x};
+        bg_pixel_y_buffer <= {bg_pixel_y_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_y};
     end
 
     // The pixel we are currently processing
-    wire [15:0] bg_pixel = bg_pixel_buffer[15 * FOREGROUND_FETCH_CYCLE_DELAY:15 * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
-    wire [9:0] bg_pixel_x = bg_pixel_x_buffer[9 * FOREGROUND_FETCH_CYCLE_DELAY:9 * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
-    wire [9:0] bg_pixel_y = bg_pixel_y_buffer[9 * FOREGROUND_FETCH_CYCLE_DELAY:9 * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [15:0] bg_pixel = bg_pixel_buffer[PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY - 1:PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [9:0] bg_pixel_x = bg_pixel_x_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [9:0] bg_pixel_y = bg_pixel_y_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
 
     wire [15:0] chroma_keyed_result;
     wire [15:0] overlayed_result;
 
     // Chroma keying
     pipeline_chroma_key chroma_keyer(
-        .enable(fg_pixel_in), // Requires a valid foreground pixel
+        .enable(fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
         .pixel_out(chroma_keyed_result)
@@ -72,7 +76,7 @@ module pipeline(
 
     // Overlaying
     pipeline_foreground_overlay overlayer(
-        .enable(fg_pixel_in), // Requires a valid foreground pixel
+        .enable(fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
         .pixel_out(overlayed_result)
@@ -86,7 +90,7 @@ module pipeline(
 
         if (~output_enable)
         begin
-            pixel_out <= 16'b0;
+            pixel_out <= {PIXEL_SIZE{1'b0}};
         end
         else
         begin

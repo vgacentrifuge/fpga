@@ -1,5 +1,3 @@
-`include "src/pipeline/pipeline_foreground_scale.v"
-
 // Special module for testing purposes with 1080p resolution
 module pipeline_foreground_scale_1080(input clk,
                                  input [1:0] ctrl_foreground_scale,

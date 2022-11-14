@@ -1,5 +1,3 @@
-//`include "src/spi/spi_slave.v"
-
 module spi_demo_top(input clk,
                     input hw_spi_clk,
                     input hw_spi_ss,
