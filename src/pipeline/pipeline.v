@@ -1,7 +1,7 @@
 module pipeline #(
     parameter PIXEL_SIZE = 16,
     parameter PRECISION = 10,
-    parameter FOREGROUND_FETCH_CYCLE_DELAY = 4 // The amount of cycles it takes for the foreground pixel value to be fetched
+    parameter FOREGROUND_FETCH_CYCLE_DELAY = 3// The amount of cycles it takes for the foreground pixel value to be fetched
 ) (
                 input clk,
 
