@@ -45,28 +45,29 @@ always @ (posedge hw_pixel_clk) begin
         // Use two MSB to signal start of new line and new column
         fifo_write_data <= hw_rgb_in;
     end
+    
+    x <= x+1;
     // If the next pixel is on x=0, start a new line
     if (x+1 == X_RES+H_FRONT_PORCH+H_SYNC+H_BACK_PORCH) begin
         x <= 0;
-        if (y+1 == Y_RES+V_FRONT_PORCH+V_SYNC+V_BACK_PORCH) begin
+        y <= y+1;
+        if (y+1 == Y_RES+V_FRONT_PORCH+V_SYNC+V_BACK_PORCH)
             y <= 0;
-        end else begin
-            y <= y+1;
-        end
-    end else begin
-        x <= x+1;
     end
         
     if(~h_sync_state && h_sync_history == 5'b11111) begin
-        x <= X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART;
-        // Once x wraps around to 0, the active area begins
+        // Only update the x coord if we are at least a few pixels away from matching up with the given HSYNC
+        if(x < X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART - 3 
+        || x > X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART + 1)
+            x <= X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART;
         h_sync_state <= 1;
     end
     if(h_sync_state && h_sync_history == 5'b00000)
         h_sync_state <= 0;
 
     if(~v_sync_state && v_sync_history == 5'b11111) begin
-        y <= Y_RES + V_SYNC + V_FRONT_PORCH;
+        if (y < Y_RES + V_SYNC + V_FRONT_PORCH - 3 || y > Y_RES + V_SYNC + V_FRONT_PORCH + 1)
+            y <= Y_RES + V_SYNC + V_FRONT_PORCH;
         // Once y wraps around to 0, the active area begins
         v_sync_state <= 1;
     end

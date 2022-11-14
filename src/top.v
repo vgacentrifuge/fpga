@@ -14,10 +14,10 @@ module top(
     input hsin_1,
 
     // ADC 2
-//    input [15:0] colour_bus_2,
-//    input dataclkin_2,
-//    input vsin_2,
-//    input hsin_2,
+    input [15:0] colour_bus_2,
+    input dataclkin_2,
+    input vsin_2,
+    input hsin_2,
     
     // DAC 0
     output [15:0] colour_bus_0,
@@ -41,7 +41,7 @@ module top(
     );
     
     wire clk160;
-    wire clk40;
+    wire clk40; // Unused
     clk_wiz_160 clk_wiz(
         .clk_in1(gclk100),
         .clk_out160(clk160),
@@ -52,10 +52,10 @@ module top(
     wire [37:0] adc2_fifo_write_data;
     wire adc2_fifo_write_req;
     adc_input adc2(
-        .hw_pixel_clk(dataclkin_1),
-        .hw_rgb_in(colour_bus_1),
-        .hw_vsync_in(vsin_1),
-        .hw_hsync_in(hsin_1),
+        .hw_pixel_clk(dataclkin_2),
+        .hw_rgb_in(colour_bus_2),
+        .hw_vsync_in(vsin_2),
+        .hw_hsync_in(hsin_2),
         
         .fifo_write_data(adc2_fifo_write_data[15:0]),
         .pixel_x(adc2_fifo_write_data[37:27]),
@@ -69,7 +69,7 @@ module top(
     pixel_FIFO_adc adc2_fifo(
         .FIFO_WRITE_0_wr_data(adc2_fifo_write_data),
         .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
-        .wr_clk_0(dataclkin_1),
+        .wr_clk_0(dataclkin_2),
         
         .FIFO_READ_0_rd_data(adc2_fifo_out),
         .FIFO_READ_0_empty(adc2_fifo_empty),
@@ -91,13 +91,13 @@ module top(
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
         .FIFO_READ_0_rd_en(dac_fifo_read),
-        .rd_clk_0(clk40)
+        .rd_clk_0(dataclkin_2)
     );
     
     // DAC
-    
     dac_handle dac(
-        .clk25(clk40),
+        .pixelclk(dataclkin_2),
+        .has_pixel(~dac_fifo_empty),
         .pixel_in(dac_fifo_out[15:0]),
         .pixel_x(dac_fifo_out[37:27]),
         .pixel_y(dac_fifo_out[26:16]),

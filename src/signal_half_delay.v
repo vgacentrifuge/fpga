@@ -6,12 +6,16 @@
 module signal_half_delay #(parameter SHIFT_AMOUNT = 4)
                           (input clk,
                            input signal_in,
+                           input clamp,
                            output reg signal_out
                            );
     reg [SHIFT_AMOUNT-1:0] shift_reg;
     
     always @(posedge clk)
-        shift_reg <= {shift_reg[SHIFT_AMOUNT-2:0], signal_in};
+        if(clamp)
+            shift_reg <= {shift_reg[SHIFT_AMOUNT-2:0], shift_reg[0]};
+        else
+            shift_reg <= {shift_reg[SHIFT_AMOUNT-2:0], signal_in};
     
     always @(negedge clk)
         signal_out <= shift_reg[SHIFT_AMOUNT-1];
