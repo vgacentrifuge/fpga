@@ -1,4 +1,5 @@
 #include <iostream>
+#include <verilated.h>
 
 #include "Vpipeline_foreground_overlay.h"
 #include "Vpipeline_foreground_scale_1080.h"

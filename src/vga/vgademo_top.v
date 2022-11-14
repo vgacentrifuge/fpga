@@ -1,6 +1,3 @@
-//`include "src/vga/dac_handle.v"
-//`include "src/vga/pixel_counter.v"
-
 module vgademo_top(input gclk100,
 
                    output [15:0] colour_bus_2,

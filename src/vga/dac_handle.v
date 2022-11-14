@@ -1,6 +1,3 @@
-//`include "src/signal_half_delay.v"
-//`include "src/vga/hvsync_generator.v"
-
 module dac_handle(
     input clk25, // 25 MHz clock
 

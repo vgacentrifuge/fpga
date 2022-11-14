@@ -8,7 +8,7 @@
 
 void write_image(Image &image, const std::string &filename) {
     unsigned error =
-        lodepng::encode(filename, image.data, image.width, image.height);
+        lodepng::encode("output/" + filename, image.data, image.width, image.height);
 
     if (error) {
         std::cout << "encoder error " << error << ": "
