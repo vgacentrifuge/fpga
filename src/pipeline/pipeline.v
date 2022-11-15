@@ -1,7 +1,9 @@
 module pipeline #(
-    parameter PIXEL_SIZE = 16, 
-    parameter RED_SIZE = 5,
-    parameter GREEN_SIZE = 6,
+    parameter R_WIDTH = 5,
+    parameter G_WIDTH = 6,
+    parameter B_WIDTH = 5,
+
+    localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH,
 
     parameter RED_PASS = 5'b00100,
     parameter GREEN_PASS = 6'b101100,
@@ -15,46 +17,46 @@ module pipeline #(
 
     parameter TRANSPARENCY_PRECISION = 3
 ) (
-                  input clk,
+    input clk,
 
-                  // The input position of the current pixel
-                  input [PRECISION - 1:0] pixel_x,
-                  input [PRECISION - 1:0] pixel_y,
+    // The input position of the current pixel
+    input [PRECISION - 1:0] pixel_x,
+    input [PRECISION - 1:0] pixel_y,
 
-                  input [PIXEL_SIZE - 1:0] bg_pixel_in,
-                  input output_enable, // Whether we are blanking screen
+    input [PIXEL_SIZE - 1:0] bg_pixel_in,
+    input output_enable, // Whether we are blanking screen
 
-                  // Foreground coord sent to SRAM, pixel recieved
-                  input  [PIXEL_SIZE - 1:0] fg_pixel_in,
-                  input  fg_pixel_skip,
-                  output signed [PRECISION:0] fg_pixel_request_x,
-                  output signed [PRECISION:0] fg_pixel_request_y,
-                  output fg_pixel_request_active,
-                
-                  // Resulting pixel. Positions for sanity checks.
-                  output reg [PIXEL_SIZE - 1:0] pixel_out,
-                  output reg [PRECISION - 1:0] pixel_x_out,
-                  output reg [PRECISION - 1:0] pixel_y_out,
+    // Foreground coord sent to SRAM, pixel recieved
+    input  [PIXEL_SIZE - 1:0] fg_pixel_in,
+    input  fg_pixel_skip,
+    output signed [PRECISION:0] fg_pixel_request_x,
+    output signed [PRECISION:0] fg_pixel_request_y,
+    output fg_pixel_request_active,
 
-                  // Control signals:
+    // Resulting pixel. Positions for sanity checks.
+    output reg [PIXEL_SIZE - 1:0] pixel_out,
+    output reg [PRECISION - 1:0] pixel_x_out,
+    output reg [PRECISION - 1:0] pixel_y_out,
 
-                  // How to merge the background and foreground
-                  // 0: No foreground
-                  // 1: Chroma key'd
-                  // 2: Direct overlay
-                  input [1:0] ctrl_overlay_mode,
+    // Control signals:
 
-                  // Foreground scaling, i.e. if we should change the size of the foreground
-                  // See pipeline_foreground_scale.v for more info
-                  input [1:0] ctrl_fg_scale,
+    // How to merge the background and foreground
+    // 0: No foreground
+    // 1: Chroma key'd
+    // 2: Direct overlay
+    input [1:0] ctrl_overlay_mode,
 
-                  // Foreground offsets, i.e. where to position the foreground on the screen
-                  // See pipeline_foreground_offset.v for more info
-                  input signed [PRECISION:0] ctrl_fg_offset_x,         // width of PRECISION+1 to accommodate sign bit
-                  input signed [PRECISION:0] ctrl_fg_offset_y,
+    // Foreground scaling, i.e. if we should change the size of the foreground
+    // See pipeline_foreground_scale.v for more info
+    input [1:0] ctrl_fg_scale,
 
-                  input [TRANSPARENCY_PRECISION-1:0] ctrl_fg_opacity
-                  );
+    // Foreground offsets, i.e. where to position the foreground on the screen
+    // See pipeline_foreground_offset.v for more info
+    input signed [PRECISION:0] ctrl_fg_offset_x,
+    input signed [PRECISION:0] ctrl_fg_offset_y,
+
+    input [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity
+);
     // Buffers while we wait for foreground pixel
     reg [PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_buffer;
     reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_x_buffer;
@@ -96,10 +98,9 @@ module pipeline #(
 
     // Chroma keying
     pipeline_chroma_key #(
-        .PIXEL_SIZE(PIXEL_SIZE),
-
-        .RED_SIZE(RED_SIZE),
-        .GREEN_SIZE(GREEN_SIZE),
+        .R_WIDTH(R_WIDTH),
+        .G_WIDTH(G_WIDTH),
+        .B_WIDTH(B_WIDTH),
 
         .RED_PASS(RED_PASS),
         .GREEN_PASS(GREEN_PASS),
@@ -114,15 +115,16 @@ module pipeline #(
     // Overlaying
     pipeline_foreground_overlay #(
         .TRANSPARENCY_PRECISION(TRANSPARENCY_PRECISION),
-        .R_WIDTH(RED_SIZE),
-        .G_WIDTH(GREEN_SIZE),
-        .B_WIDTH(PIXEL_SIZE-RED_SIZE-GREEN_SIZE)
+        
+        .R_WIDTH(R_WIDTH),
+        .G_WIDTH(G_WIDTH),
+        .B_WIDTH(B_WIDTH)
     ) overlayer(
         .enable(~fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
-    .pixel_out(overlayed_result),
-    .fg_opacity(ctrl_fg_opacity)
+        .pixel_out(overlayed_result),
+        .fg_opacity(ctrl_fg_opacity)
     );
 
     // Output

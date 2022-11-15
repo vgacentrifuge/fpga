@@ -1,7 +1,9 @@
 module controlled_pipeline #(
-    parameter PIXEL_SIZE = 16, 
-    parameter RED_SIZE = 5,
-    parameter GREEN_SIZE = 6
+    parameter R_WIDTH = 5,
+    parameter G_WIDTH = 6,
+    parameter B_WIDTH = 5,
+
+    localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH,
 
     parameter RED_PASS = 5'b00100,
     parameter GREEN_PASS = 6'b101100,
@@ -58,9 +60,9 @@ module controlled_pipeline #(
 
     // Pipeline module instance, using control values from above
     pipeline #(
-        .PIXEL_SIZE(PIXEL_SIZE),
-        .RED_SIZE(RED_SIZE),
-        .GREEN_SIZE(GREEN_SIZE),
+        .R_WIDTH(R_WIDTH),
+        .G_WIDTH(G_WIDTH),
+        .B_WIDTH(B_WIDTH),
         
         .RED_PASS(RED_PASS),
         .GREEN_PASS(GREEN_PASS),
