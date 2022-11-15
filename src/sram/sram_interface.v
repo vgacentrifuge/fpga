@@ -1,6 +1,6 @@
 /*
  * This module wraps signals for an SRAM chip
- * The read port guarantees data ready after 4 cycles
+ * The read port guarantees data ready after 3 cycles
  * Write port may be written independently, and will delay by a single cycle if reading is attempted at the same time
  * Note that writing on two subsequent cycles may cause the second write to be ignored if the first is delayed by a read
  * Reading on two subsequent cycles will also cause a write during the first cycle to be ignored
@@ -8,7 +8,7 @@
 module sram_interface(
                       // module signals
                       input clk,
-                      // Read line, guaranteed 4 cycle delay
+                      // Read line, guaranteed 3 cycle delay
                       input read_enable,
                       input [19:0] r_addr,
                       output [17:0] data_out,

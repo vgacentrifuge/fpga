@@ -7,7 +7,7 @@
 #include "mode_helper.h"
 #include "png_helper.h"
 
-#define FOREGROUND_FETCH_DELAY 4
+#define FOREGROUND_FETCH_DELAY 3
 #define BLANKING_AREA_SIZE 50
 
 Vpipeline_1080 *pipeline;
