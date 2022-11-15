@@ -4,7 +4,7 @@
 #include <queue>
 
 #include "Vpipeline_1080.h"
-#include "mode_helper.h"
+#include "constants.h"
 #include "png_helper.h"
 
 #define FOREGROUND_FETCH_DELAY 3
@@ -19,8 +19,8 @@ struct ForegroundRequest {
 };
 
 void run_image(Image *foreground, Image *background,
-               const std::string output_file, uint8_t scale_mode,
-               uint8_t overlay_mode, int16_t offset_x, int16_t offset_y,
+               const std::string output_file, mode_scale_t scale_mode,
+               mode_overlay_t overlay_mode, int16_t offset_x, int16_t offset_y,
                uint8_t opacity)
 {
     if (background->getWidth() != foreground->getWidth() ||
@@ -117,25 +117,25 @@ int main(int argc, char const *argv[]) {
     Image *foreground = load_rgb_image("test/images/test_fg.png");
 
     run_image(foreground, background, "test_output_half_direct_0_0.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 0, 0, 7);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 0, 0, 4);
 
     run_image(foreground, background, "test_output_half_direct_100_100.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 100, 100, 7);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 100, 100, 4);
 
     run_image(foreground, background, "test_output_half_direct_-100_-100.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, -100, -100, 7);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, -100, -100, 4);
 
     run_image(foreground, background, "test_output_full_chroma_0_0.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 0, 0, 7);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 0, 0, 8);
 
     run_image(foreground, background, "test_output_full_chroma_100_100.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 100, 100, 7);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 100, 100, 8);
 
     run_image(foreground, background, "test_output_full_chroma_-100_-100.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, -100, -100, 7);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, -100, -100, 8);
 
     run_image(foreground, background, "test_output_half_chroma_250_250.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_CHROMA_KEY, 250, 250, 7);
+              MODE_SCALE_HALF, MODE_OVERLAY_CHROMA_KEY, 250, 250, 8);
 
     pipeline->final();
 

@@ -132,44 +132,45 @@ module pipeline_spi_control #(
     always @ (posedge clk) begin
         if (~spi_active) begin
             command_state <= STATE_AWAITING_COMMAND;
-        end else begin
-            case (command_state)
-                STATE_AWAITING_COMMAND: begin
-                    if (byte_ready) begin
-                        command_buffer <= byte_out;
+        end 
+        
+        case (command_state)
+            STATE_AWAITING_COMMAND: begin
+                if (byte_ready) begin
+                    command_buffer <= byte_out;
 
-                        if (is_no_arg) begin
-                            command_state <= STATE_AWAITING_PROCESSING;
-                        end else begin
-                            command_state <= STATE_AWAITING_DATA_1;
-                        end
-                    end
-                end
-                STATE_AWAITING_DATA_1: begin
-                    if (byte_ready) begin
-                        argument_buffer[7:0] <= byte_out;
-
-                        if (is_one_arg) begin
-                            command_state <= STATE_AWAITING_PROCESSING;
-                        end else begin
-                            command_state <= STATE_AWAITING_DATA_2;
-                        end
-                    end
-                end
-                STATE_AWAITING_DATA_2: begin
-                    if (byte_ready) begin
-                        argument_buffer[15:8] <= byte_out;
+                    if (is_no_arg) begin
                         command_state <= STATE_AWAITING_PROCESSING;
+                    end else begin
+                        command_state <= STATE_AWAITING_DATA_1;
                     end
                 end
-                STATE_AWAITING_PROCESSING: begin
-                    command_state <= process_command(command_buffer, argument_buffer);;
+            end
+            STATE_AWAITING_DATA_1: begin
+                if (byte_ready) begin
+                    argument_buffer[7:0] <= byte_out;
+
+                    if (is_one_arg) begin
+                        command_state <= STATE_AWAITING_PROCESSING;
+                    end else begin
+                        command_state <= STATE_AWAITING_DATA_2;
+                    end
                 end
-                default: begin
-                    // No clue what is going on, just start over :)
-                    command_state <= STATE_AWAITING_COMMAND;
+            end
+            STATE_AWAITING_DATA_2: begin
+                if (byte_ready) begin
+                    argument_buffer <= {argument_buffer[7:0], byte_out};
+                    command_state <= STATE_AWAITING_PROCESSING;
                 end
-            endcase
-        end
+            end
+            STATE_AWAITING_PROCESSING: begin
+                command_state <= process_command(command_buffer, argument_buffer);;
+            end
+            default: begin
+                // No clue what is going on, just start over :)
+                command_state <= STATE_AWAITING_COMMAND;
+            end
+        endcase
+    
     end
 endmodule

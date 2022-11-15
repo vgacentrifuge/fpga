@@ -13,7 +13,7 @@ else
 endif
 
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
-CPP=include/lodepng/lodepng.cpp include/png_helper.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
+CPP=include/lodepng/lodepng.cpp include/png_helper.cpp include/spi_helper.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
 INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude -Iinclude/lodepng -Iobj_dir
 
 VERILATOR_INCLUDE_FOLDERS=$(sort $(dir $(SRC)))
@@ -41,6 +41,7 @@ sim:
 	make sim_overlay_scale
 	make sim_pipeline
 	make sim_spi
+	make sim_spi_control
 
 pre_sim: clean setup
 
@@ -59,7 +60,7 @@ sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/ver
 sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o
 	./test/sim_pipeline.o
 
-sim_spi_control: pre_sim src/pipeline/pipeline_spi_control.cpp test/sim_spi_control.o
+sim_spi_control: pre_sim test/verilog/pipeline_spi_control_16b.cpp test/sim_spi_control.o
 	./test/sim_spi_control.o
 
 format: $(SRC)

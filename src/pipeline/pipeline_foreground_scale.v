@@ -16,7 +16,7 @@ module pipeline_foreground_scale #(
     output fg_active
 );
     
-    wire scale_full    = ctrl_foreground_scale == 2'b11;
+    wire scale_full    = ctrl_foreground_scale == 2'b00;
     wire scale_half    = ctrl_foreground_scale == 2'b10;
     wire scale_quarter = ctrl_foreground_scale == 2'b01;
     
