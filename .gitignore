@@ -3,3 +3,4 @@ vgacentrifuge2022/*
 !vgacentrifuge2022/vgacentrifuge2022.srcs
 .vscode
 output/
+*.o
