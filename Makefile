@@ -12,7 +12,7 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale
+.PHONY: format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale sim_spi sim_spi_control
 
 setup:
 	mkdir -p output
@@ -27,8 +27,12 @@ sim:
 	make sim_chroma_key
 	make sim_overlay_scale
 	make sim_pipeline
+	make sim_spi
 
 pre_sim: clean setup
+
+sim_spi: pre_sim src/spi/spi_slave.cpp test/sim_spi.o
+	./test/sim_spi.o
 
 sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
@@ -41,6 +45,9 @@ sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/ver
 
 sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o
 	./test/sim_pipeline.o
+
+sim_spi_control: pre_sim src/pipeline/pipeline_spi_control.cpp test/sim_spi_control.o
+	./test/sim_spi_control.o
 
 format: $(SRC)
 	for file in $^ ; do \
