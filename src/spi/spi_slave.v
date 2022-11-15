@@ -6,6 +6,7 @@ module spi_slave (input clk,
                   input hw_spi_clk,
                   input hw_spi_ss,
                   input hw_spi_mosi,
+                  output spi_active,
                   output hw_spi_miso,
                   output [7:0] byte_out,
                   output byte_ready);
@@ -31,7 +32,7 @@ module spi_slave (input clk,
     // If any bit is low, consider it active. Being active for 1 cycle even if we
     // shouldn't be will not cause any issues. Being inactive for 1 cycle where we
     // should be active will cause big issues
-    wire spi_active = spi_ss_history != 8'hFF;
+    assign spi_active = spi_ss_history != 8'hFF;
     
     reg [2:0] counter;
     reg [7:0] data_in;  

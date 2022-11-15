@@ -45,16 +45,25 @@ module controlled_pipeline #(
     // 0: No foreground
     // 1: Chroma key'd
     // 2: Direct overlay
-    reg [1:0] ctrl_overlay_mode,
+    reg [1:0] ctrl_overlay_mode;
     
     // Foreground scaling, i.e. if we should change the size of the foreground
     // See pipeline_foreground_scale.v for more info
-    reg [1:0] ctrl_fg_scale,
+    reg [1:0] ctrl_fg_scale;
 
     // Foreground offsets, i.e. where to position the foreground on the screen
     // See pipeline_foreground_offset.v for more info
-    reg signed [PRECISION:0] ctrl_fg_offset_x,
-    reg signed [PRECISION:0] ctrl_fg_offset_y
+    reg signed [PRECISION:0] ctrl_fg_offset_x;
+    reg signed [PRECISION:0] ctrl_fg_offset_y;
+
+    // Foreground clipping, i.e. how many pixels to remove from the foreground
+    // on each side. Applies to the foreground coordinates before scaling, meaning 
+    // that removing 4 pixels at quarter scale will yield in removing 1 actual 
+    // foreground pixel that would otherwise be displayed
+    reg [PRECISION - 1:0] ctrl_fg_clip_left;
+    reg [PRECISION - 1:0] ctrl_fg_clip_right;
+    reg [PRECISION - 1:0] ctrl_fg_clip_top;
+    reg [PRECISION - 1:0] ctrl_fg_clip_bottom;
 
     // Pipeline module instance, using control values from above
     pipeline #(
