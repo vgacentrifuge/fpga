@@ -14,22 +14,27 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 	
 .PHONY: format clean purge sim_chroma_key sim_full_delay sim_overlay_scale
 
+setup:
+	mkdir -p output
+
 clean:
 	rm -rf obj_dir test/*.o
 
 purge: clean
 	rm -rf output
 
-sim_chroma_key: clean src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
+pre_sim: clean setup
+
+sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
 
-sim_full_delay: clean src/signal_full_delay.cpp test/sim_full_delay.o
+sim_full_delay: pre_sim src/signal_full_delay.cpp test/sim_full_delay.o
 	./test/sim_full_delay.o
 
-sim_overlay_scale: clean src/pipeline/pipeline_foreground_overlay.cpp src/pipeline/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o
+sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp src/pipeline/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o
 	./test/sim_overlay_scale.o 
 
-sim_pipeline: clean src/pipeline/pipeline.cpp test/sim_pipeline.o
+sim_pipeline: pre_sim src/pipeline/pipeline_1080.cpp test/sim_pipeline.o
 	./test/sim_pipeline.o
 
 format: $(SRC)

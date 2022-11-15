@@ -8,8 +8,9 @@ module pipeline_foreground_scale_1080(input clk,
                                  output reg signed [11:0] fg_pixel_x,
                                  output reg signed [11:0] fg_pixel_y,
                                  output fg_active);
-    pipeline_foreground_scale #(.RESOLUTION_X(1920), .RESOLUTION_Y(1080), .PRECISION(11)) internal(
+    pipeline_foreground_scale #(.RESOLUTION_X(1920), .RESOLUTION_Y(1080), .PRECISION(11)) handle(
         .clk(clk),
+        .output_enable(1'b1), // This is just for testing with verilator, so don't really need to care
         .ctrl_foreground_scale(ctrl_foreground_scale),
         .fg_offset_x(fg_offset_x),
         .fg_offset_y(fg_offset_y),
