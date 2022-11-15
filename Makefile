@@ -36,9 +36,6 @@ clean:
 purge: clean
 	rm -rf output
 
-outdir:
-	mkdir -p output
-
 sim: 
 	make sim_chroma_key
 	make sim_overlay_scale
@@ -46,16 +43,16 @@ sim:
 
 pre_sim: clean setup
 
-sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o outdir
+sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
 	./test/sim_chroma_key.o
 
-sim_full_delay: pre_sim src/signal_full_delay.cpp test/sim_full_delay.o outdir
+sim_full_delay: pre_sim src/signal_full_delay.cpp test/sim_full_delay.o
 	./test/sim_full_delay.o
 
-sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/verilog/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o outdir
+sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/verilog/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o
 	./test/sim_overlay_scale.o 
 
-sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o outdir
+sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o
 	./test/sim_pipeline.o
 
 format: $(SRC)
