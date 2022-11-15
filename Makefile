@@ -1,5 +1,18 @@
+ifeq ($(USE_DOCKER),)
+USE_DOCKER=0 # Use "USE_DOCKER=1 make ..." instead
+endif
+
+ifeq ($(USE_DOCKER), 1)
+	VERILATOR_EXEC=docker run -ti --rm -v ${PWD}\:/work --user $(shell id -u)\:$(shell id -g) verilator/verilator\:latest
+	JAVA_EXEC=docker run -ti --rm -v ${PWD}/src\:/src -v ${PWD}/format\:/format --user $(shell id -u)\:$(shell id -g) eclipse-temurin:19-alpine java
+	VERILATOR_FOLDER=obj_dir/vlt
+else
+	VERILATOR_EXEC=verilator
+	JAVA_EXEC=java
+	VERILATOR_FOLDER=$(shell verilator --getenv VERILATOR_ROOT)
+endif
+
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
-VERILATOR_FOLDER=$(shell verilator --getenv VERILATOR_ROOT)
 CPP=include/lodepng/lodepng.cpp include/png_helper.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
 INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude -Iinclude/lodepng -Iobj_dir
 
@@ -7,7 +20,7 @@ VERILATOR_INCLUDE_FOLDERS=$(sort $(dir $(SRC)))
 VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 
 %.cpp: %.v
-	verilator --cc $(VER_INC) $<
+	$(VERILATOR_EXEC) --cc $(VER_INC) $<
 
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
@@ -51,5 +64,5 @@ sim_spi_control: pre_sim src/pipeline/pipeline_spi_control.cpp test/sim_spi_cont
 
 format: $(SRC)
 	for file in $^ ; do \
-		java -jar format/verilog-format.jar -f $$file -s format/verilog-format.properties ; \
+		$(JAVA_EXEC) -jar format/verilog-format.jar -f $$file -s format/verilog-format.properties ; \
 	done
