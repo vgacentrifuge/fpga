@@ -1,4 +1,4 @@
-USE_DOCKER=1
+USE_DOCKER=0 # Use "USE_DOCKER=1 make ..." instead
 
 ifeq ($(USE_DOCKER), 1)
 	VERILATOR_EXEC=docker run -ti --rm -v ${PWD}\:/work --user $(shell id -u)\:$(shell id -g) verilator/verilator\:latest
