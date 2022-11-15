@@ -1,4 +1,6 @@
+ifeq ($(USE_DOCKER),)
 USE_DOCKER=0 # Use "USE_DOCKER=1 make ..." instead
+endif
 
 ifeq ($(USE_DOCKER), 1)
 	VERILATOR_EXEC=docker run -ti --rm -v ${PWD}\:/work --user $(shell id -u)\:$(shell id -g) verilator/verilator\:latest
@@ -23,7 +25,10 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean purge sim_chroma_key sim_full_delay sim_overlay_scale
+.PHONY: format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale
+
+setup:
+	mkdir -p output
 
 clean:
 	rm -rf obj_dir test/*.o
@@ -34,16 +39,23 @@ purge: clean
 outdir:
 	mkdir -p output
 
-sim_chroma_key: clean src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o outdir
+sim: 
+	make sim_chroma_key
+	make sim_overlay_scale
+	make sim_pipeline
+
+pre_sim: clean setup
+
+sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o outdir
 	./test/sim_chroma_key.o
 
-sim_full_delay: clean src/signal_full_delay.cpp test/sim_full_delay.o outdir
+sim_full_delay: pre_sim src/signal_full_delay.cpp test/sim_full_delay.o outdir
 	./test/sim_full_delay.o
 
-sim_overlay_scale: clean src/pipeline/pipeline_foreground_overlay.cpp src/pipeline/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o outdir
+sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/verilog/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o outdir
 	./test/sim_overlay_scale.o 
 
-sim_pipeline: clean src/pipeline/pipeline.cpp test/sim_pipeline.o outdir
+sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o outdir
 	./test/sim_pipeline.o
 
 format: $(SRC)

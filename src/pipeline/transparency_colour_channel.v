@@ -2,8 +2,8 @@ module transparency_colour_channel #(parameter TRANSPARENCY_PRECISION,
                                      parameter CHANNEL_WIDTH)
                                     (input [CHANNEL_WIDTH-1:0] src_a_in,
                                      input [CHANNEL_WIDTH-1:0] src_b_in,
-                                     input [TRANSPARENCY_PRECISION-1:0] src_a_proportion), // This should be between 0 and 2^TRANSPARENCY_PRECISION-1
-                                     output [CHANNEL_WIDTH-1:0] channel_out;
+                                     input [TRANSPARENCY_PRECISION-1:0] src_a_proportion, // This should be between 0 and 2^TRANSPARENCY_PRECISION-1
+                                     output [CHANNEL_WIDTH-1:0] channel_out);
     wire [TRANSPARENCY_PRECISION-1:0] src_b_proportion           = {TRANSPARENCY_PRECISION{1'b1}}-src_a_proportion;
     wire [TRANSPARENCY_PRECISION+CHANNEL_WIDTH-1:0] weighted_sum = src_a_proportion*src_a_in+src_b_proportion*src_b_in;
     /*
