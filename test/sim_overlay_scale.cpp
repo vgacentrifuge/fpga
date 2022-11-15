@@ -10,6 +10,9 @@
 Vpipeline_foreground_scale_1080 *scaler;
 Vpipeline_foreground_overlay *overlay;
 
+// Takes in a background coordinate and uses the scaler's logic to compute
+// the corresponding foreground coordinate which will sit on top of the
+// current background.
 void get_foreground_position(int &fg_x, int &fg_y, bool &fg_active, int bg_x,
                              int bg_y) {
     scaler->clk = 0;
@@ -25,9 +28,9 @@ void get_foreground_position(int &fg_x, int &fg_y, bool &fg_active, int bg_x,
     fg_active = scaler->fg_active;
 }
 
-void do_scale_run(Image *background, Image *foreground,
+void do_scale_overlay_run(Image *background, Image *foreground,
                   const std::string output_file, int fg_offset_x,
-                  int fg_offset_y, int scale_mode) {
+                  int fg_offset_y, int scale_mode, int fg_opacity) {
     if (background->getWidth() != foreground->getWidth() ||
         background->getHeight() != foreground->getHeight()) {
         std::cout << "Images must be the same size" << std::endl;
@@ -60,6 +63,7 @@ void do_scale_run(Image *background, Image *foreground,
             overlay->fg_pixel_in =
                 RGB_TO_PIX(fg_pixel.r, fg_pixel.g, fg_pixel.b);
             overlay->enable = fg_active;
+            overlay->fg_opacity = fg_opacity; // In default case precision=3 so max val=7
             overlay->eval();
 
             uint8_t r = PIX_TO_R(overlay->pixel_out);
@@ -81,19 +85,44 @@ int main(int argc, char const *argv[]) {
     Image *background = load_rgb_image("test/images/test_bg.png");
     Image *foreground = load_rgb_image("test/images/test_fg.png");
 
-    do_scale_run(background, foreground, "test_scale_full.png", 0, 0,
-                 MODE_SCALE_FULL);
-    do_scale_run(background, foreground, "test_scale_half.png", 0, 0,
-                 MODE_SCALE_HALF);
-    do_scale_run(background, foreground, "test_scale_quarter.png", 0, 0,
-                 MODE_SCALE_QUARTER);
+    // First 6 are all with fully-opaque foreground, so normal overlay
+    do_scale_overlay_run(background, foreground, "test_scale_full_100.png", 0, 0,
+                 MODE_SCALE_FULL, 8);
+    do_scale_overlay_run(background, foreground, "test_scale_half_100.png", 0, 0,
+                 MODE_SCALE_HALF, 8);
+    do_scale_overlay_run(background, foreground, "test_scale_quarter_100.png", 0, 0,
+                 MODE_SCALE_QUARTER, 8);
 
-    do_scale_run(background, foreground, "test_scale_offset_1.png", 100, 100,
-                 MODE_SCALE_HALF);
-    do_scale_run(background, foreground, "test_scale_offset_2.png", -200, -200,
-                 MODE_SCALE_HALF);
-    do_scale_run(background, foreground, "test_scale_offset_3.png", 500, -100,
-                 MODE_SCALE_HALF);
+    do_scale_overlay_run(background, foreground, "test_scale_offset_1_100.png", 100, 100,
+                 MODE_SCALE_HALF, 8);
+    do_scale_overlay_run(background, foreground, "test_scale_offset_2_100.png", -200, -200,
+                 MODE_SCALE_HALF, 8);
+    do_scale_overlay_run(background, foreground, "test_scale_offset_3_100.png", 500, -100,
+                 MODE_SCALE_HALF, 8);
+
+    // Here should be at 50% opacity
+    do_scale_overlay_run(background, foreground, "test_scale_full_50.png", 0, 0,
+                 MODE_SCALE_FULL, 4);
+    do_scale_overlay_run(background, foreground, "test_scale_half_50.png", 0, 0,
+                 MODE_SCALE_HALF, 4);
+    do_scale_overlay_run(background, foreground, "test_scale_quarter_50.png", 0, 0,
+                 MODE_SCALE_QUARTER, 4);
+
+    // Here should be at 25% opacity
+    do_scale_overlay_run(background, foreground, "test_scale_full_25.png", 0, 0,
+                 MODE_SCALE_FULL, 2);
+    do_scale_overlay_run(background, foreground, "test_scale_half_25.png", 0, 0,
+                 MODE_SCALE_HALF, 2);
+    do_scale_overlay_run(background, foreground, "test_scale_quarter_25.png", 0, 0,
+                 MODE_SCALE_QUARTER, 2);
+
+    // Here should be at 0% opacity
+    do_scale_overlay_run(background, foreground, "test_scale_full_0.png", 0, 0,
+                 MODE_SCALE_FULL, 0);
+    do_scale_overlay_run(background, foreground, "test_scale_half_0.png", 0, 0,
+                 MODE_SCALE_HALF, 0);
+    do_scale_overlay_run(background, foreground, "test_scale_quarter_0.png", 0, 0,
+                 MODE_SCALE_QUARTER, 0);
 
     scaler->final();
     overlay->final();

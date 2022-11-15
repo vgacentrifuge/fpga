@@ -20,7 +20,9 @@ struct ForegroundRequest {
 
 void run_image(Image *foreground, Image *background,
                const std::string output_file, uint8_t scale_mode,
-               uint8_t overlay_mode, int16_t offset_x, int16_t offset_y) {
+               uint8_t overlay_mode, int16_t offset_x, int16_t offset_y,
+               uint8_t opacity)
+{
     if (background->getWidth() != foreground->getWidth() ||
         background->getHeight() != foreground->getHeight()) {
         std::cout << "Images must be the same size" << std::endl;
@@ -35,6 +37,7 @@ void run_image(Image *foreground, Image *background,
     pipeline->ctrl_overlay_mode = overlay_mode;
     pipeline->ctrl_fg_offset_x = offset_x;
     pipeline->ctrl_fg_offset_y = offset_y;
+    pipeline->ctrl_fg_opacity = opacity;
 
     // Initialize a bunch of empty requests to start with
     std::queue<ForegroundRequest> foreground_requests;
@@ -114,25 +117,25 @@ int main(int argc, char const *argv[]) {
     Image *foreground = load_rgb_image("test/images/test_fg.png");
 
     run_image(foreground, background, "test_output_half_direct_0_0.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 0, 0);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 0, 0, 7);
 
     run_image(foreground, background, "test_output_half_direct_100_100.png",
-                MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 100, 100);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 100, 100, 7);
 
     run_image(foreground, background, "test_output_half_direct_-100_-100.png",
-                MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, -100, -100);
+              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, -100, -100, 7);
 
     run_image(foreground, background, "test_output_full_chroma_0_0.png",
-                MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 0, 0);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 0, 0, 7);
 
     run_image(foreground, background, "test_output_full_chroma_100_100.png",
-                MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 100, 100);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 100, 100, 7);
 
     run_image(foreground, background, "test_output_full_chroma_-100_-100.png",
-                MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, -100, -100);
+              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, -100, -100, 7);
 
     run_image(foreground, background, "test_output_half_chroma_250_250.png",
-                MODE_SCALE_HALF, MODE_OVERLAY_CHROMA_KEY, 250, 250);
+              MODE_SCALE_HALF, MODE_OVERLAY_CHROMA_KEY, 250, 250, 7);
 
     pipeline->final();
 
