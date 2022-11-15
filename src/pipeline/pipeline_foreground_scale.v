@@ -1,7 +1,7 @@
 module pipeline_foreground_scale #(
     parameter RESOLUTION_X = 800,
     parameter RESOLUTION_Y = 600,
-    parameter PRECISION = 10
+    parameter PRECISION = 11
 ) (
     input clk,
     input output_enable, 
@@ -10,6 +10,7 @@ module pipeline_foreground_scale #(
     input signed [PRECISION:0] fg_offset_y,
     input [PRECISION - 1:0] pixel_x,
     input [PRECISION - 1:0] pixel_y,
+    
     output reg signed [PRECISION:0] fg_pixel_x,
     output reg signed [PRECISION:0] fg_pixel_y,
     output fg_active
