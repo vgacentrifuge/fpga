@@ -4,11 +4,51 @@
 
 #include "lodepng.h"
 
-// g++ lodepng.cpp example_decode.cpp -ansi -pedantic -Wall -Wextra -O3
+Image::Image(unsigned int width, unsigned int height)
+    : width(width), height(height) {
+    data.resize(width * height * 4);
+}
+
+Image::Image(unsigned int width, unsigned int height, std::vector<uint8_t> data)
+    : width(width), height(height), data(data) {}
+
+int Image::getWidth() { return width; }
+int Image::getHeight() { return height; }
+std::vector<uint8_t> Image::getData() { return data; }
+
+void Image::get_rgb(unsigned int x, unsigned int y, PixelRGB &pixel) {
+    unsigned int index = (y * width + x) * 3;
+    pixel.r = data[index + 0];
+    pixel.g = data[index + 1];
+    pixel.b = data[index + 2];
+}
+
+void Image::get_rgba(unsigned int x, unsigned int y, PixelRGBA &pixel) {
+    unsigned int index = (y * width + x) * 4;
+    pixel.r = data[index + 0];
+    pixel.g = data[index + 1];
+    pixel.b = data[index + 2];
+    pixel.a = data[index + 3];
+}
+
+void Image::set_rgb(unsigned int x, unsigned int y, PixelRGB pixel) {
+    unsigned int index = (y * width + x) * 3;
+    data[index + 0] = pixel.r;
+    data[index + 1] = pixel.g;
+    data[index + 2] = pixel.b;
+}
+
+void Image::set_rgba(unsigned int x, unsigned int y, PixelRGBA pixel) {
+    unsigned int index = (y * width + x) * 4;
+    data[index + 0] = pixel.r;
+    data[index + 1] = pixel.g;
+    data[index + 2] = pixel.b;
+    data[index + 3] = pixel.a;
+}
 
 void write_image(Image &image, const std::string &filename) {
-    unsigned error =
-        lodepng::encode("output/" + filename, image.data, image.width, image.height);
+    unsigned error = lodepng::encode("output/" + filename, image.getData(),
+                                     image.getWidth(), image.getHeight());
 
     if (error) {
         std::cout << "encoder error " << error << ": "
@@ -16,7 +56,7 @@ void write_image(Image &image, const std::string &filename) {
     }
 }
 
-void load_image(Image &image_data, const std::string &filename) {
+Image *load_image(const std::string &filename) {
     std::vector<uint8_t> image;  // the raw pixels
     unsigned width, height;
 
@@ -29,16 +69,14 @@ void load_image(Image &image_data, const std::string &filename) {
         exit(EXIT_FAILURE);
     }
 
-    // the pixels are now in the vector "image", 4 bytes per pixel, ordered
-    // RGBARGBA
-    image_data.width = width;
-    image_data.height = height;
-    image_data.data = image;
+    return new Image(width, height, image);
 }
 
-void load_rgb_image(Image &image_data, const std::string &filename) {
-    load_image(image_data, filename);
-    convert_rgba_to_rgb(image_data);
+Image *load_rgb_image(const std::string &filename) {
+    Image *loaded = load_image(filename);
+    Image *converted = convert_rgba_to_rgb(*loaded);
+    delete loaded;
+    return converted;
 }
 
 void blend_pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t &r_out,
@@ -52,16 +90,20 @@ void blend_pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t &r_out,
         (uint8_t)(((b / 255.0f) * alpha + BASE_COLOR_B * (1.0f - alpha)) * 255);
 }
 
-void convert_rgba_to_rgb(Image &image_data) {
-    std::vector<uint8_t> rgb_image;
-    rgb_image.resize(image_data.width * image_data.height * 3);
+Image *convert_rgba_to_rgb(Image &image_data) {
+    Image *image = new Image(image_data.getWidth(), image_data.getHeight());
 
-    for (int i = 0; i < image_data.width * image_data.height; i++) {
-        blend_pixel(image_data.data[i * 4 + 0], image_data.data[i * 4 + 1],
-                    image_data.data[i * 4 + 2], image_data.data[i * 4 + 3],
-                    rgb_image[i * 3 + 0], rgb_image[i * 3 + 1],
-                    rgb_image[i * 3 + 2]);
+    for (int y = 0; y < image_data.getHeight(); y++) {
+        for (int x = 0; x < image_data.getWidth(); x++) {
+            PixelRGBA pixel;
+            image_data.get_rgba(x, y, pixel);
+            PixelRGB pixel_rgb;
+            blend_pixel(pixel.r, pixel.g, pixel.b, pixel.a, pixel_rgb.r,
+                        pixel_rgb.g, pixel_rgb.b);
+
+            image->set_rgb(x, y, pixel_rgb);
+        }
     }
 
-    image_data.data = rgb_image;
+    return image;
 }

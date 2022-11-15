@@ -1,6 +1,8 @@
 module pipeline #(
     parameter PIXEL_SIZE = 16,
-    parameter PRECISION = 10,
+    parameter PRECISION = 11,
+    parameter RESOLUTION_X = 800,
+    parameter RESOLUTION_Y = 600,
     parameter FOREGROUND_FETCH_CYCLE_DELAY = 4 // The amount of cycles it takes for the foreground pixel value to be fetched
 ) (
                 input clk,
@@ -25,8 +27,19 @@ module pipeline #(
                 output reg [PRECISION - 1:0] pixel_y_out,
 
                 // Control signals:
+
+                // How to merge the background and foreground
+                // 0: No foreground
+                // 1: Chroma key'd
+                // 2: Direct overlay
                 input [1:0] ctrl_overlay_mode,
+                
+                // Foreground scaling, i.e. if we should change the size of the foreground
+                // See pipeline_foreground_scale.v for more info
                 input [1:0] ctrl_fg_scale,
+
+                // Foreground offsets, i.e. where to position the foreground on the screen
+                // See pipeline_foreground_offset.v for more info
                 input signed [PRECISION:0] ctrl_fg_offset_x,
                 input signed [PRECISION:0] ctrl_fg_offset_y
                 );
@@ -37,9 +50,12 @@ module pipeline #(
 
     // Handle foreground fetching
     pipeline_foreground_scale #(
-        .PRECISION(PRECISION)
+        .PRECISION(PRECISION),
+        .RESOLUTION_X(RESOLUTION_X),
+        .RESOLUTION_Y(RESOLUTION_Y)
     ) fg_fetcher(
         .clk(clk),
+        .output_enable(output_enable),
         .ctrl_foreground_scale(ctrl_fg_scale),
         .fg_offset_x(ctrl_fg_offset_x),
         .fg_offset_y(ctrl_fg_offset_y),
@@ -59,16 +75,16 @@ module pipeline #(
     end
 
     // The pixel we are currently processing
-    wire [15:0] bg_pixel = bg_pixel_buffer[PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY - 1:PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
-    wire [9:0] bg_pixel_x = bg_pixel_x_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
-    wire [9:0] bg_pixel_y = bg_pixel_y_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [PIXEL_SIZE - 1:0] bg_pixel = bg_pixel_buffer[PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY - 1:PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [PRECISION - 1:0] bg_pixel_x = bg_pixel_x_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire [PRECISION - 1:0] bg_pixel_y = bg_pixel_y_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
 
-    wire [15:0] chroma_keyed_result;
-    wire [15:0] overlayed_result;
+    wire [PIXEL_SIZE - 1:0] chroma_keyed_result;
+    wire [PIXEL_SIZE - 1:0] overlayed_result;
 
     // Chroma keying
     pipeline_chroma_key chroma_keyer(
-        .enable(fg_pixel_skip), // Requires a valid foreground pixel
+        .enable(~fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
         .pixel_out(chroma_keyed_result)
@@ -76,7 +92,7 @@ module pipeline #(
 
     // Overlaying
     pipeline_foreground_overlay overlayer(
-        .enable(fg_pixel_skip), // Requires a valid foreground pixel
+        .enable(~fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
         .pixel_out(overlayed_result)
@@ -95,8 +111,8 @@ module pipeline #(
         else
         begin
             case (ctrl_overlay_mode)
-                2'b00: pixel_out <= chroma_keyed_result; // Chroma key
-                2'b01: pixel_out <= overlayed_result; // Overlay foreground
+                2'b01: pixel_out <= chroma_keyed_result; // Chroma key
+                2'b10: pixel_out <= overlayed_result; // Overlay foreground
                 default: pixel_out <= bg_pixel;
             endcase
         end
