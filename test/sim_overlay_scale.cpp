@@ -1,13 +1,11 @@
-#include <iostream>
 #include <verilated.h>
+
+#include <iostream>
 
 #include "Vpipeline_foreground_overlay.h"
 #include "Vpipeline_foreground_scale_1080.h"
+#include "mode_helper.h"
 #include "png_helper.h"
-
-#define MODE_SCALE_FULL 0b11
-#define MODE_SCALE_HALF 0b10
-#define MODE_SCALE_QUARTER 0b01
 
 Vpipeline_foreground_scale_1080 *scaler;
 Vpipeline_foreground_overlay *overlay;
@@ -30,11 +28,11 @@ void get_foreground_position(int &fg_x, int &fg_y, bool &fg_active, int bg_x,
     fg_active = scaler->fg_active;
 }
 
-void do_scale_overlay_run(Image &background, Image &foreground,
+void do_scale_overlay_run(Image *background, Image *foreground,
                   const std::string output_file, int fg_offset_x,
                   int fg_offset_y, int scale_mode, int fg_opacity) {
-    if (background.width != foreground.width ||
-        background.height != foreground.height) {
+    if (background->getWidth() != foreground->getWidth() ||
+        background->getHeight() != foreground->getHeight()) {
         std::cout << "Images must be the same size" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -43,37 +41,27 @@ void do_scale_overlay_run(Image &background, Image &foreground,
     scaler->fg_offset_x = fg_offset_x;
     scaler->fg_offset_y = fg_offset_y;
 
-    Image output;
-    output.width = background.width;
-    output.height = background.height;
-    output.data.resize(output.width * output.height * 4);
+    Image output(background->getWidth(), background->getHeight());
 
-    for (int y = 0; y < background.height; y++) {
-        for (int x = 0; x < background.width; x++) {
+    for (int y = 0; y < output.getHeight(); y++) {
+        for (int x = 0; x < output.getWidth(); x++) {
             int fg_x, fg_y;
             bool fg_active;
 
             get_foreground_position(fg_x, fg_y, fg_active, x, y);
 
-            int index = (y * background.width + x) * 3;
-            uint8_t bg_r = background.data[index + 0];
-            uint8_t bg_g = background.data[index + 1];
-            uint8_t bg_b = background.data[index + 2];
+            PixelRGB bg_pixel;
+            PixelRGB fg_pixel = {0, 0, 0};
+            background->get_rgb(x, y, bg_pixel);
 
-            uint8_t fg_r, fg_g, fg_b;
             if (fg_active) {
-                index = (fg_y * foreground.width + fg_x) * 3;
-                fg_r = foreground.data[index + 0];
-                fg_g = foreground.data[index + 1];
-                fg_b = foreground.data[index + 2];
-            } else {
-                fg_r = 0;
-                fg_g = 0;
-                fg_b = 0;
+                foreground->get_rgb(fg_x, fg_y, fg_pixel);
             }
 
-            overlay->bg_pixel_in = RGB_TO_PIX(bg_r, bg_g, bg_b);
-            overlay->fg_pixel_in = RGB_TO_PIX(fg_r, fg_g, fg_b);
+            overlay->bg_pixel_in =
+                RGB_TO_PIX(bg_pixel.r, bg_pixel.g, bg_pixel.b);
+            overlay->fg_pixel_in =
+                RGB_TO_PIX(fg_pixel.r, fg_pixel.g, fg_pixel.b);
             overlay->enable = fg_active;
             overlay->fg_opacity = fg_opacity; // In default case precision=3 so max val=7
             overlay->eval();
@@ -82,11 +70,7 @@ void do_scale_overlay_run(Image &background, Image &foreground,
             uint8_t g = PIX_TO_G(overlay->pixel_out);
             uint8_t b = PIX_TO_B(overlay->pixel_out);
 
-            index = (y * background.width + x) << 2;
-            output.data[index + 0] = r;
-            output.data[index + 1] = g;
-            output.data[index + 2] = b;
-            output.data[index + 3] = 255;
+            output.set_rgba(x, y, {r, g, b, 255});
         }
     }
 
@@ -98,10 +82,8 @@ int main(int argc, char const *argv[]) {
     scaler = new Vpipeline_foreground_scale_1080;
     overlay = new Vpipeline_foreground_overlay;
 
-    Image background;
-    Image foreground;
-    load_rgb_image(background, "test/images/test_bg.png");
-    load_rgb_image(foreground, "test/images/test_fg.png");
+    Image *background = load_rgb_image("test/images/test_bg.png");
+    Image *foreground = load_rgb_image("test/images/test_fg.png");
 
     // First 6 are all with fully-opaque foreground, so normal overlay
     do_scale_overlay_run(background, foreground, "test_scale_full_100%.png", 0, 0,
@@ -144,5 +126,11 @@ int main(int argc, char const *argv[]) {
 
     scaler->final();
     overlay->final();
+
+    delete scaler;
+    delete overlay;
+    delete background;
+    delete foreground;
+
     return 0;
 }
