@@ -12,7 +12,7 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean purge sim_chroma_key sim_full_delay sim_overlay_scale
+.PHONY: format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale
 
 setup:
 	mkdir -p output
@@ -23,6 +23,11 @@ clean:
 purge: clean
 	rm -rf output
 
+sim: 
+	make sim_chroma_key
+	make sim_overlay_scale
+	make sim_pipeline
+
 pre_sim: clean setup
 
 sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key.o
@@ -31,10 +36,10 @@ sim_chroma_key: pre_sim src/pipeline/pipeline_chroma_key.cpp test/sim_chroma_key
 sim_full_delay: pre_sim src/signal_full_delay.cpp test/sim_full_delay.o
 	./test/sim_full_delay.o
 
-sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp src/pipeline/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o
+sim_overlay_scale: pre_sim src/pipeline/pipeline_foreground_overlay.cpp test/verilog/pipeline_foreground_scale_1080.cpp test/sim_overlay_scale.o
 	./test/sim_overlay_scale.o 
 
-sim_pipeline: pre_sim src/pipeline/pipeline_1080.cpp test/sim_pipeline.o
+sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o
 	./test/sim_pipeline.o
 
 format: $(SRC)

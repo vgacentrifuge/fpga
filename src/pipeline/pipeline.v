@@ -1,8 +1,16 @@
 module pipeline #(
-    parameter PIXEL_SIZE = 16,
+    parameter PIXEL_SIZE = 16, 
+    parameter RED_SIZE = 5,
+    parameter GREEN_SIZE = 6,
+
+    parameter RED_PASS = 5'b00100,
+    parameter GREEN_PASS = 6'b101100,
+    parameter BLUE_PASS = 5'b01100,
+
     parameter PRECISION = 11,
     parameter RESOLUTION_X = 800,
     parameter RESOLUTION_Y = 600,
+    
     parameter FOREGROUND_FETCH_CYCLE_DELAY = 3 // The amount of cycles it takes for the foreground pixel value to be fetched
 ) (
                 input clk,
@@ -83,7 +91,16 @@ module pipeline #(
     wire [PIXEL_SIZE - 1:0] overlayed_result;
 
     // Chroma keying
-    pipeline_chroma_key chroma_keyer(
+    pipeline_chroma_key #(
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .RED_SIZE(RED_SIZE),
+        .GREEN_SIZE(GREEN_SIZE),
+
+        .RED_PASS(RED_PASS),
+        .GREEN_PASS(GREEN_PASS),
+        .BLUE_PASS(BLUE_PASS)
+    ) chroma_keyer(
         .enable(~fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
@@ -91,7 +108,9 @@ module pipeline #(
     );
 
     // Overlaying
-    pipeline_foreground_overlay overlayer(
+    pipeline_foreground_overlay #(
+        .PIXEL_SIZE(PIXEL_SIZE)
+    ) overlayer(
         .enable(~fg_pixel_skip), // Requires a valid foreground pixel
         .bg_pixel_in(bg_pixel),
         .fg_pixel_in(fg_pixel_in),
