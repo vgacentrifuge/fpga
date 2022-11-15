@@ -4,7 +4,7 @@
 
 #include "Vpipeline_foreground_overlay.h"
 #include "Vpipeline_foreground_scale_1080.h"
-#include "mode_helper.h"
+#include "constants.h"
 #include "png_helper.h"
 
 Vpipeline_foreground_scale_1080 *scaler;
@@ -30,7 +30,7 @@ void get_foreground_position(int &fg_x, int &fg_y, bool &fg_active, int bg_x,
 
 void do_scale_overlay_run(Image *background, Image *foreground,
                   const std::string output_file, int fg_offset_x,
-                  int fg_offset_y, int scale_mode, int fg_opacity) {
+                  int fg_offset_y, mode_scale_t scale_mode, int fg_opacity) {
     if (background->getWidth() != foreground->getWidth() ||
         background->getHeight() != foreground->getHeight()) {
         std::cout << "Images must be the same size" << std::endl;
