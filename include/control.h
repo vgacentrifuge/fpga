@@ -5,8 +5,8 @@
 
 typedef enum {
     MODE_SCALE_FULL = 0b00,
-    MODE_SCALE_HALF = 0b10,
-    MODE_SCALE_QUARTER = 0b01
+    MODE_SCALE_HALF = 0b01,
+    MODE_SCALE_QUARTER = 0b10
 } mode_scale_t;
 
 typedef enum {
