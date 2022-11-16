@@ -25,7 +25,10 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale sim_spi sim_spi_control
+.PHONY: lint format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale sim_spi sim_spi_control
+
+lint:
+	verilator --lint-only $(VER_INC) $(SRC) --top-module top
 
 setup:
 	mkdir -p output
