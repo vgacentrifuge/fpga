@@ -5,15 +5,24 @@ module controlled_pipeline #(
 
     localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH,
 
+    // Chroma key threshold values
     parameter RED_PASS = 5'b00100,
     parameter GREEN_PASS = 6'b101100,
     parameter BLUE_PASS = 5'b01100,
-
+    
+    // The amount of bits we use to represent an unsigned position on the screen
     parameter PRECISION = 11,
+    
     parameter RESOLUTION_X = 800,
     parameter RESOLUTION_Y = 600,
-    
-    parameter FOREGROUND_FETCH_CYCLE_DELAY = 3 // The amount of cycles it takes for the foreground pixel value to be fetched
+
+    // The amount of cycles it takes for the foreground pixel value to be fetched
+    parameter FOREGROUND_FETCH_CYCLE_DELAY = 3,
+
+    // The amount of bits to use for the transparency value. We actually use one
+    // more than this value, but don't worry too much about that :)
+    // Explanation in transparency_colour_channel.v
+    parameter TRANSPARENCY_PRECISION = 3
 )(
     input clk,
 
@@ -71,6 +80,10 @@ module controlled_pipeline #(
     reg signed [PRECISION:0] ctrl_fg_offset_x;
     reg signed [PRECISION:0] ctrl_fg_offset_y;
 
+    // Foreground opacity, i.e. how transparent the foreground should be. 0 is
+    // fully transparent, 2^TRANSPARENCY_PRECISION is fully opaque
+    input [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
+
     // Foreground clipping, i.e. how many pixels to remove from the foreground
     // on each side. Applies to the foreground coordinates before scaling, meaning 
     // that removing 4 pixels at quarter scale will yield in removing 1 actual 
@@ -99,23 +112,32 @@ module controlled_pipeline #(
         .clk(clk),
         .pixel_x(pixel_x),
         .pixel_y(pixel_y),
+        
         .bg_pixel_in(bg_pixel_in),
         .bg_pixel_ready(bg_pixel_ready),
         .in_blanking_area(in_blanking_area),
+        
         .fg_pixel_in(fg_pixel_in),
         .fg_pixel_skip(fg_pixel_skip),
         .fg_pixel_ready(fg_pixel_ready),
         .fg_pixel_request_x(fg_pixel_request_x),
         .fg_pixel_request_y(fg_pixel_request_y),
         .fg_pixel_request_active(fg_pixel_request_active),
+        
         .pixel_out(pixel_out),
         .pixel_x_out(pixel_x_out),
         .pixel_y_out(pixel_y_out),
         .pixel_ready_out(pixel_ready_out),
+        
         .ctrl_overlay_mode(ctrl_overlay_mode),
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
-        .ctrl_fg_offset_y(ctrl_fg_offset_y)
+        .ctrl_fg_offset_y(ctrl_fg_offset_y),
+        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_clip_left(ctrl_fg_clip_left),
+        .ctrl_fg_clip_right(ctrl_fg_clip_right),
+        .ctrl_fg_clip_top(ctrl_fg_clip_top),
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom)
     );
 
     // SPI control module instance, assigning control values to above
@@ -123,10 +145,17 @@ module controlled_pipeline #(
         .PRECISION(PRECISION)
     ) pipeline_spi_control_handle(
         .clk(clk),
+        
         .ctrl_overlay_mode(ctrl_overlay_mode),
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
+        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_clip_left(ctrl_fg_clip_left),
+        .ctrl_fg_clip_right(ctrl_fg_clip_right),
+        .ctrl_fg_clip_top(ctrl_fg_clip_top),
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
+
         .hw_spi_clk(hw_spi_clk),
         .hw_spi_ss(hw_spi_ss),
         .hw_spi_mosi(hw_spi_mosi),
