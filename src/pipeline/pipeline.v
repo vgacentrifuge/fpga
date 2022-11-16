@@ -39,7 +39,7 @@ module pipeline #(
     // FOREGROUND_FETCH_CYCLE_DELAY after the request was sent. If not, stuff
     // will break (massively)
     input fg_pixel_ready,
-
+    
     output signed [PRECISION:0] fg_pixel_request_x,
     output signed [PRECISION:0] fg_pixel_request_y,
     output fg_pixel_request_active,
