@@ -69,7 +69,7 @@ module top(
     pixel_FIFO_adc adc2_fifo(
         .FIFO_WRITE_0_wr_data(adc2_fifo_write_data),
         .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
-        .wr_clk_0(dataclkin_2),
+        .wr_clk_0(dataclkin_1),
         
         .FIFO_READ_0_rd_data(adc2_fifo_out),
         .FIFO_READ_0_empty(adc2_fifo_empty),
@@ -77,6 +77,7 @@ module top(
         .rd_clk_0(clk160)
     );
     
+    wire dac_pixel_clock = dataclkin_2;
     // DAC FIFO
     wire [37:0] dac_fifo_out;
     wire [37:0] dac_fifo_in;
@@ -91,12 +92,12 @@ module top(
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
         .FIFO_READ_0_rd_en(dac_fifo_read),
-        .rd_clk_0(dataclkin_2)
+        .rd_clk_0(dac_pixel_clock)
     );
     
     // DAC
     dac_handle dac(
-        .pixelclk(dataclkin_2),
+        .pixelclk(dac_pixel_clock),
         .has_pixel(~dac_fifo_empty),
         .pixel_in(dac_fifo_out[15:0]),
         .pixel_x(dac_fifo_out[37:27]),
