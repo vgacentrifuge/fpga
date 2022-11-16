@@ -1,6 +1,8 @@
 #ifndef MODE_HELPER_H
 #define MODE_HELPER_H
 
+#include <string>
+
 typedef enum {
     MODE_SCALE_FULL = 0b00,
     MODE_SCALE_HALF = 0b10,
@@ -28,5 +30,21 @@ typedef enum {
     CMD_FG_FREEZE = 0xB,
     CMD_FG_IMG_UPLOAD = 0xC,
 } command_t;
+
+typedef struct {
+    mode_overlay_t overlay;
+    mode_scale_t scale;
+    uint8_t opacity;
+    
+    int16_t offset_x;
+    int16_t offset_y;
+
+    uint16_t clip_left;
+    uint16_t clip_right;
+    uint16_t clip_top;
+    uint16_t clip_bottom;
+} pipeline_control_t;
+
+std::string format_pipeline_mode(pipeline_control_t &ctrl);
 
 #endif

@@ -4,7 +4,7 @@
 #include <queue>
 
 #include "Vpipeline_1080.h"
-#include "constants.h"
+#include "control.h"
 #include "png_helper.h"
 
 #define FOREGROUND_FETCH_DELAY 3
@@ -18,10 +18,7 @@ struct ForegroundRequest {
     bool active;
 };
 
-void run_image(Image *foreground, Image *background,
-               const std::string output_file, mode_scale_t scale_mode,
-               mode_overlay_t overlay_mode, int16_t offset_x, int16_t offset_y,
-               uint8_t opacity)
+void run_image(Image *foreground, Image *background, pipeline_control_t &settings)
 {
     if (background->getWidth() != foreground->getWidth() ||
         background->getHeight() != foreground->getHeight()) {
@@ -33,11 +30,15 @@ void run_image(Image *foreground, Image *background,
 
     // Constant for the entire run. Set them here, and then we don't need to
     // worry about them
-    pipeline->ctrl_fg_scale = scale_mode;
-    pipeline->ctrl_overlay_mode = overlay_mode;
-    pipeline->ctrl_fg_offset_x = offset_x;
-    pipeline->ctrl_fg_offset_y = offset_y;
-    pipeline->ctrl_fg_opacity = opacity;
+    pipeline->ctrl_fg_scale = settings.scale;
+    pipeline->ctrl_overlay_mode = settings.overlay;
+    pipeline->ctrl_fg_offset_x = settings.offset_x;
+    pipeline->ctrl_fg_offset_y = settings.offset_y;
+    pipeline->ctrl_fg_opacity = settings.opacity;
+    pipeline->ctrl_fg_clip_left = settings.clip_left;
+    pipeline->ctrl_fg_clip_right = settings.clip_right;
+    pipeline->ctrl_fg_clip_top = settings.clip_top;
+    pipeline->ctrl_fg_clip_bottom = settings.clip_bottom;
 
     // Initialize a bunch of empty requests to start with
     std::queue<ForegroundRequest> foreground_requests;
@@ -104,6 +105,7 @@ void run_image(Image *foreground, Image *background,
         }
     }
 
+    std::string output_file = "test_pipeline_" + format_pipeline_mode(settings) + ".png";
     std::cout << "Writing output to file " << output_file << std::endl;
     write_image(output, output_file);
 }
@@ -116,26 +118,70 @@ int main(int argc, char const *argv[]) {
     Image *background = load_rgb_image("test/images/test_bg.png");
     Image *foreground = load_rgb_image("test/images/test_fg.png");
 
-    run_image(foreground, background, "test_output_half_direct_0_0.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 0, 0, 4);
+    pipeline_control_t settings = {
+        .scale = MODE_SCALE_HALF,
+        .overlay = MODE_OVERLAY_DIRECT,
+        .offset_x = 0,
+        .offset_y = 0,
+        .opacity = 4,
+        .clip_left = 0,
+        .clip_right = 0,
+        .clip_top = 0,
+        .clip_bottom = 0,
+    };
 
-    run_image(foreground, background, "test_output_half_direct_100_100.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, 100, 100, 4);
+    mode_overlay_t overlay_modes[2] = {
+        MODE_OVERLAY_DIRECT,
+        MODE_OVERLAY_CHROMA_KEY
+    };
 
-    run_image(foreground, background, "test_output_half_direct_-100_-100.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_DIRECT, -100, -100, 4);
+    mode_scale_t scale_modes[3] = {
+        MODE_SCALE_HALF,
+        MODE_SCALE_FULL,
+        MODE_SCALE_QUARTER
+    };
 
-    run_image(foreground, background, "test_output_full_chroma_0_0.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 0, 0, 8);
+    int16_t offset_modes[3] = {
+        0,
+        100,
+        -100
+    };
 
-    run_image(foreground, background, "test_output_full_chroma_100_100.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, 100, 100, 8);
+    uint8_t opacity_modes[3] = {
+        4,
+        8
+    };
 
-    run_image(foreground, background, "test_output_full_chroma_-100_-100.png",
-              MODE_SCALE_FULL, MODE_OVERLAY_CHROMA_KEY, -100, -100, 8);
+    uint16_t clip_modes[3] = {
+        0,
+        150,
+        400
+    };
 
-    run_image(foreground, background, "test_output_half_chroma_250_250.png",
-              MODE_SCALE_HALF, MODE_OVERLAY_CHROMA_KEY, 250, 250, 8);
+    for (int i = 0; i < 2; i++) {
+        settings.overlay = overlay_modes[i];
+        
+        for (int j = 0; j < 3; j++) {
+            settings.scale = scale_modes[j];
+            
+            for (int k = 0; k < 3; k++) {
+                settings.offset_x = offset_modes[k];
+                settings.offset_y = offset_modes[k];
+                
+                for (int l = 0; l < 2; l++) {
+                    settings.opacity = opacity_modes[l];
+
+                    for (int m = 0; m < 3; m++) {
+                        settings.clip_left = clip_modes[m];
+                        settings.clip_right = clip_modes[m];
+                        settings.clip_top = clip_modes[m];
+                        settings.clip_bottom = clip_modes[m];
+                        run_image(foreground, background, settings);
+                    }
+                }
+            }
+        }
+    }
 
     pipeline->final();
 

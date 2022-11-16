@@ -29,8 +29,8 @@ module pipeline #(
     // Foreground coord sent to SRAM, pixel recieved
     input  [PIXEL_SIZE - 1:0] fg_pixel_in,
     input  fg_pixel_skip,
-    output signed [PRECISION:0] fg_pixel_request_x,
-    output signed [PRECISION:0] fg_pixel_request_y,
+    output wire signed [PRECISION:0] fg_pixel_request_x,
+    output wire signed [PRECISION:0] fg_pixel_request_y,
     output fg_pixel_request_active,
 
     // Resulting pixel. Positions for sanity checks.
@@ -38,24 +38,16 @@ module pipeline #(
     output reg [PRECISION - 1:0] pixel_x_out,
     output reg [PRECISION - 1:0] pixel_y_out,
 
-    // Control signals:
-
-    // How to merge the background and foreground
-    // 0: No foreground
-    // 1: Chroma key'd
-    // 2: Direct overlay
+    // Control signals. See controlled_pipeline.v for more info
     input [1:0] ctrl_overlay_mode,
-
-    // Foreground scaling, i.e. if we should change the size of the foreground
-    // See pipeline_foreground_scale.v for more info
     input [1:0] ctrl_fg_scale,
-
-    // Foreground offsets, i.e. where to position the foreground on the screen
-    // See pipeline_foreground_offset.v for more info
     input signed [PRECISION:0] ctrl_fg_offset_x,
     input signed [PRECISION:0] ctrl_fg_offset_y,
-
-    input [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity
+    input [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity,
+    input [PRECISION - 1:0] ctrl_fg_clip_left,
+    input [PRECISION - 1:0] ctrl_fg_clip_right,
+    input [PRECISION - 1:0] ctrl_fg_clip_top,
+    input [PRECISION - 1:0] ctrl_fg_clip_bottom
 );
     // Buffers while we wait for foreground pixel
     reg [PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_buffer;
@@ -77,7 +69,25 @@ module pipeline #(
         .pixel_y(pixel_y),
         .fg_pixel_x(fg_pixel_request_x),
         .fg_pixel_y(fg_pixel_request_y),
-        .fg_active(fg_pixel_request_active)
+        .fg_active(fg_scale_request_active)
+    );
+
+    wire fg_scale_request_active;
+
+    // Handle foreground clipping
+    pipeline_foreground_clip #(
+        .PRECISION(PRECISION),
+        .RESOLUTION_X(RESOLUTION_X),
+        .RESOLUTION_Y(RESOLUTION_Y)
+    ) fg_clipper(
+        .in_fg_request_active(fg_scale_request_active),
+        .fg_pixel_x(fg_pixel_request_x),
+        .fg_pixel_y(fg_pixel_request_y),
+        .ctrl_fg_clip_left(ctrl_fg_clip_left),
+        .ctrl_fg_clip_right(ctrl_fg_clip_right),
+        .ctrl_fg_clip_top(ctrl_fg_clip_top),
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
+        .out_fg_request_active(fg_pixel_request_active)
     );
 
     // Assuming here that a new pixel is ready every clock cycle
