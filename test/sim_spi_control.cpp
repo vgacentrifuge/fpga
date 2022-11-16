@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "Vpipeline_spi_control_16b.h"
-#include "constants.h"
+#include "control.h"
 #include "spi_helper.h"
 
 #define SPI_SIGNED_2_BYTE(x) \
