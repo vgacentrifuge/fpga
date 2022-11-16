@@ -54,11 +54,11 @@ int main(int argc, char const *argv[]) {
 
     control = new Vpipeline_spi_control_16b;
 
-    SPISlave slave = {.clk = &control->clk,
-                      .eval = eval,
+    SPISlave slave = {.eval = eval,
+                      .clk = &control->clk,
                       .hw_spi_clk = &control->hw_spi_clk,
-                      .hw_spi_mosi = &control->hw_spi_mosi,
-                      .hw_spi_ss = &control->hw_spi_ss};
+                      .hw_spi_ss = &control->hw_spi_ss,
+                      .hw_spi_mosi = &control->hw_spi_mosi};
 
     // Probably more stuff we can test, but it all uses pretty much the same
     // logic so I'm not going to bother for now. Can add if there is an issue.
