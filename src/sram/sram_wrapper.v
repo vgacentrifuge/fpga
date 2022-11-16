@@ -14,13 +14,13 @@ module sram_wrapper (
     // ADC FIFO input
     input [35:0] adc_pixel_data,
     input adc_pixel_ready,
-    output adc_pixel_read,
+    output reg adc_pixel_read,
     // Pipeline request signals
     input request_active,
     input [10:0] request_x,
     input [10:0] request_y,
-    output [15:0] request_data,
-    output request_ready,
+    output reg [15:0] request_data,
+    output reg request_ready,
     // SRAM signals
     output [19:0] hw_sram_addr,
     inout [17:0] hw_sram_data,
@@ -36,10 +36,10 @@ parameter X_RES = 800;
 parameter Y_RES = 600;
 
 // Interface module
-wire sram_we;
-wire [19:0] sram_addr;
-wire [17:0] sram_data_in;
-wire [17:0] sram_data_out;
+reg sram_we;
+reg [19:0] sram_addr;
+reg [17:0] sram_data_in;
+reg [17:0] sram_data_out;
 
 sram_interface sram(
     .clk(clk),
@@ -65,17 +65,17 @@ always @(posedge clk) begin
     adc_pixel_read <= 0;
     sram_data_in <= 18'b0;
     sram_we <= 0;
-    read_issued <= {read_issued[1:0], 0};
-    out_of_bounds_read <= {out_of_bounds_read[1:0], 0};
+    read_issued <= {read_issued[1:0], 1'b0};
+    out_of_bounds_read <= {out_of_bounds_read[1:0], 1'b0};
     if (request_active) begin
         // Read from SRAM
         if (request_x >= X_RES || request_y >= Y_RES) begin
             // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
-            out_of_bounds_read <= {out_of_bounds_read[1:0], 1};
+            out_of_bounds_read <= {out_of_bounds_read[1:0], 1'b1};
         end else begin
             sram_addr <= {request_x[9:0], request_y[9:0]};
         end
-        read_issued <= {read_issued[1:0], 1};
+        read_issued <= {read_issued[1:0], 1'b1};
     end else begin
         // Attempt to write from elsewhere:
         if (adc_pixel_ready) begin
