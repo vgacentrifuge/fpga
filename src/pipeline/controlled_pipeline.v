@@ -41,7 +41,7 @@ module controlled_pipeline #(
     input hw_spi_ss,
     input hw_spi_mosi,
     
-    output hw_spi_miso,
+    output hw_spi_miso
 );
     // How to merge the background and foreground
     // 0: No foreground

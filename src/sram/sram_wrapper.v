@@ -12,7 +12,7 @@ module sram_wrapper (
     input [10:0] spi_pixel_x,
     input [10:0] spi_pixel_y,
     // ADC FIFO input
-    input [35:0] adc_pixel_data,
+    input [37:0] adc_pixel_data,
     input adc_pixel_ready,
     output reg adc_pixel_read,
     // Pipeline request signals
@@ -39,7 +39,7 @@ parameter Y_RES = 600;
 reg sram_we;
 reg [19:0] sram_addr;
 reg [17:0] sram_data_in;
-reg [17:0] sram_data_out;
+wire [17:0] sram_data_out;
 
 sram_interface sram(
     .clk(clk),

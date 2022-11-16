@@ -45,41 +45,41 @@ module pipeline_spi_control #(
 
     // Function for processing the commands. Allows us to keep the logic
     // here and not in the state machine
-    function [2:0] process_command(input [7:0] command_buffer, input [15:0] argument_buffer);
+    function [2:0] process_command(input [7:0] command_buffer, input [15:0] argument_buffer); begin
         case (command_buffer)
             CMD_RESET: begin
-                ctrl_overlay_mode <= 2'b00;
-                ctrl_fg_scale <= 2'b00;
-                ctrl_fg_offset_x <= {PRECISION + 1{1'b0}};
-                ctrl_fg_offset_y <= {PRECISION + 1{1'b0}};
-                ctrl_fg_clip_left <= {PRECISION{1'b0}};
-                ctrl_fg_clip_right <= {PRECISION{1'b0}};
-                ctrl_fg_clip_top <= {PRECISION{1'b0}};
-                ctrl_fg_clip_bottom <= {PRECISION{1'b0}};
+                ctrl_overlay_mode = 2'b00;
+                ctrl_fg_scale = 2'b00;
+                ctrl_fg_offset_x = {PRECISION + 1{1'b0}};
+                ctrl_fg_offset_y = {PRECISION + 1{1'b0}};
+                ctrl_fg_clip_left = {PRECISION{1'b0}};
+                ctrl_fg_clip_right = {PRECISION{1'b0}};
+                ctrl_fg_clip_top = {PRECISION{1'b0}};
+                ctrl_fg_clip_bottom = {PRECISION{1'b0}};
             end
             CMD_SET_FOREGROUND_MODE: begin
-                ctrl_overlay_mode <= argument_buffer[1:0];
+                ctrl_overlay_mode = argument_buffer[1:0];
             end
             CMD_SET_FOREGROUND_SCALE: begin
-                ctrl_fg_scale <= argument_buffer[1:0];
+                ctrl_fg_scale = argument_buffer[1:0];
             end
             CMD_SET_FOREGROUND_OFFSET_X: begin
-                ctrl_fg_offset_x <= argument_buffer[PRECISION:0];
+                ctrl_fg_offset_x = argument_buffer[PRECISION:0];
             end
             CMD_SET_FOREGROUND_OFFSET_Y: begin
-                ctrl_fg_offset_y <= argument_buffer[PRECISION:0];
+                ctrl_fg_offset_y = argument_buffer[PRECISION:0];
             end
             CMD_SET_FOREGROUND_CLIP_LEFT: begin
-                ctrl_fg_clip_left <= argument_buffer[PRECISION - 1:0];
+                ctrl_fg_clip_left = argument_buffer[PRECISION - 1:0];
             end
             CMD_SET_FOREGROUND_CLIP_RIGHT: begin
-                ctrl_fg_clip_right <= argument_buffer[PRECISION - 1:0];
+                ctrl_fg_clip_right = argument_buffer[PRECISION - 1:0];
             end
             CMD_SET_FOREGROUND_CLIP_TOP: begin
-                ctrl_fg_clip_top <= argument_buffer[PRECISION - 1:0];
+                ctrl_fg_clip_top = argument_buffer[PRECISION - 1:0];
             end
             CMD_SET_FOREGROUND_CLIP_BOTTOM: begin
-                ctrl_fg_clip_bottom <= argument_buffer[PRECISION - 1:0];
+                ctrl_fg_clip_bottom = argument_buffer[PRECISION - 1:0];
             end
             default: begin
                 // Do nothing
@@ -87,6 +87,7 @@ module pipeline_spi_control #(
         endcase
 
         process_command = STATE_AWAITING_COMMAND;
+        end
     endfunction
 
     reg [7:0] command_buffer;
@@ -164,7 +165,7 @@ module pipeline_spi_control #(
                 end
             end
             STATE_AWAITING_PROCESSING: begin
-                command_state <= process_command(command_buffer, argument_buffer);;
+                command_state <= process_command(command_buffer, argument_buffer);
             end
             default: begin
                 // No clue what is going on, just start over :)

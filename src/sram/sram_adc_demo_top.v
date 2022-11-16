@@ -4,7 +4,7 @@
  */
 
 // All the ports here are hardware ports
-module top(
+module sram_adc_demo_top(
     input gclk100,
     
     // ADC 1
@@ -23,7 +23,7 @@ module top(
     output [15:0] colour_bus_0,
     output hsync_out_0,
     output vsync_out_0,
-    output dacclk_out_0
+    output dacclk_out_0,
 
     // SRAM
    inout [35:0] sram_data_bus_0,
@@ -148,8 +148,10 @@ module top(
     );
     reg [3:0] shifter; // so we can simulate a fg request every four cycles
     always @(posedge clk160) begin
-        if (shifter == 4'0000) begin
+        if (shifter == 4'b0000) begin
             shifter <= 4'b1000;
+            x <= 0;
+            y <= 0;
         end else begin
             shifter <= {shifter[2:0],shifter[3]};
         end
