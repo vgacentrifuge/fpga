@@ -1,15 +1,11 @@
 /*
- * This module wraps signals for an SRAM chip
- * The read port guarantees data ready after 3 cycles
- * Write port may be written independently, and will delay by a single cycle if reading is attempted at the same time
- * Note that writing on two subsequent cycles may cause the second write to be ignored if the first is delayed by a read
- * Reading on two subsequent cycles will also cause a write during the first cycle to be ignored
+ * This module interfaces with an SRAM chip
  */
 module sram_interface(
                       // module signals
                       input clk,
                       input write_enable,
-                      input [19:0] r_addr,
+                      input [19:0] addr,
                       output [17:0] data_out,
                       input [17:0] data_in,
                       // SRAM signals
@@ -26,8 +22,6 @@ module sram_interface(
     assign sram_advload     = 0;
     assign sram_chip_enable = 1;
     assign sram_clk_enable  = 0;
-    assign sram_oe          = 0; // Should technically be 1 during writes, but docs state this is ignored when writing anyway
-
 
     // Latch register to store data till next sram negedge
     reg [19:0] addr_latch;
@@ -47,9 +41,9 @@ module sram_interface(
 
     // Latch data on clk posedge
     always @(posedge clk) begin
-        addr_latch <= w_addr_wait;
-        we_latch <= we_wait;
-        data_latch <= w_data_wait;
+        addr_latch <= addr;
+        we_latch <= write_enable;
+        data_latch <= data_in;
     end
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
