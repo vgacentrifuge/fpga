@@ -7,7 +7,7 @@
 #include "control.h"
 #include "png_helper.h"
 
-#define FOREGROUND_FETCH_DELAY 3  
+#define FOREGROUND_FETCH_DELAY 3
 #define BLANKING_AREA_SIZE 50
 
 Vpipeline_1080 *pipeline;
@@ -18,14 +18,16 @@ struct fg_request_t {
     bool active;
 };
 
-void check_fg_request(Image *foreground,
-                      std::queue<fg_request_t> &request_queue) {
+void check_fg_request(std::queue<fg_request_t> &request_queue) {
     fg_request_t request = {(int16_t)pipeline->fg_pixel_request_x,
                             (int16_t)pipeline->fg_pixel_request_y,
                             (bool)pipeline->fg_pixel_request_active};
     request_queue.push(request);
+}
 
-    request = request_queue.front();
+void write_fg_request(Image *foreground,
+                      std::queue<fg_request_t> &request_queue) {
+    fg_request_t request = request_queue.front();
     request_queue.pop();
 
     PixelRGB fg_pixel;
@@ -80,8 +82,6 @@ void run_image(Image *foreground, Image *background,
             pipeline->clk = 0;
             pipeline->eval();
 
-            pipeline->clk = 1;
-
             // Set the inputs for the current pixel
             pipeline->pixel_x = x;
             pipeline->pixel_y = y;
@@ -97,20 +97,33 @@ void run_image(Image *foreground, Image *background,
             pipeline->bg_pixel_in = bg_pixel_in;
             pipeline->bg_pixel_ready = 1;
             pipeline->in_blanking_area = blanking_area;
-            check_fg_request(foreground, request_queue);
-            pipeline->eval();
 
-            if (pipeline->pixel_ready_out) {
-                pixel_out = pipeline->pixel_out;
-                blanking_area = pipeline->pixel_x_out >= output.getWidth() ||
-                                pipeline->pixel_y_out >= output.getHeight();
+            // Run a few iterations to simulate that the pixel clock for BG
+            // is much slower than the actual clock
+            for (int k = 0; k < 2; k++) {
+                pipeline->clk = 1;
+                write_fg_request(foreground, request_queue);
+                pipeline->eval();
+                check_fg_request(request_queue);
 
-                if (!blanking_area) {
-                    r = PIX_TO_R(pixel_out);
-                    g = PIX_TO_G(pixel_out);
-                    b = PIX_TO_B(pixel_out);
-                    output.set_rgba(pipeline->pixel_x_out, pipeline->pixel_y_out, {r, g, b, 255});
+                if (pipeline->pixel_ready_out) {
+                    pixel_out = pipeline->pixel_out;
+                    blanking_area =
+                        pipeline->pixel_x_out >= output.getWidth() ||
+                        pipeline->pixel_y_out >= output.getHeight();
+
+                    if (!blanking_area) {
+                        r = PIX_TO_R(pixel_out);
+                        g = PIX_TO_G(pixel_out);
+                        b = PIX_TO_B(pixel_out);
+                        output.set_rgba(pipeline->pixel_x_out,
+                                        pipeline->pixel_y_out, {r, g, b, 255});
+                    }
                 }
+
+                pipeline->bg_pixel_ready = 0;
+                pipeline->clk = 0;
+                pipeline->eval();
             }
         }
     }
