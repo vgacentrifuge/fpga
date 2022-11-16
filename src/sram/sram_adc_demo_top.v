@@ -26,7 +26,7 @@ module sram_adc_demo_top(
     output dacclk_out_0,
 
     // SRAM
-   inout [35:0] sram_data_bus_0,
+   inout [16:0] sram_data_bus_0,
    output [19:0] sram_addr_bus_0,
    output sram_ce1p3_0,
    output sram_ce2_0,
@@ -77,6 +77,9 @@ module sram_adc_demo_top(
         .rd_clk_0(clk160)
     );
     
+    //try having dac clock independant of the adc
+    wire dac_pixel_clock = clk40;
+    
     // DAC FIFO
     wire [37:0] dac_fifo_out;
     wire [37:0] dac_fifo_in;
@@ -91,12 +94,12 @@ module sram_adc_demo_top(
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
         .FIFO_READ_0_rd_en(dac_fifo_read),
-        .rd_clk_0(dataclkin_2)
+        .rd_clk_0(dac_pixel_clock)
     );
     
     // DAC
     dac_handle dac(
-        .pixelclk(dataclkin_1),
+        .pixelclk(dac_pixel_clock),
         .has_pixel(~dac_fifo_empty),
         .pixel_in(dac_fifo_out[15:0]),
         .pixel_x(dac_fifo_out[37:27]),
@@ -113,13 +116,14 @@ module sram_adc_demo_top(
     reg [10:0] x;
     reg [10:0] y;
 
-    wire request_active;
+    reg request_active;
     wire data_ready;
     wire [15:0] data;
 
     // SRAM module
     sram_wrapper sram(
         .clk(clk160),
+        .frozen(frozen),
         // ADC FIFO connection
         .adc_pixel_data(adc1_fifo_out),
         .adc_pixel_ready(~adc1_fifo_empty),
@@ -138,7 +142,7 @@ module sram_adc_demo_top(
 
         // Hardware port wiring
         .hw_sram_addr(sram_addr_bus_0),
-        .hw_sram_data(sram_data_bus_0[17:0]),
+        .hw_sram_data(sram_data_bus_0),
         .hw_sram_advload(sram_adv_ld_0),
         .hw_sram_write_enable(sram_we_0),
         .hw_sram_chip_enable(sram_ce2_0),
@@ -146,33 +150,30 @@ module sram_adc_demo_top(
         .hw_sram_clk_enable(sram_cen_0),
         .hw_sram_clk(sram_clk_0)
     );
-    reg [3:0] shifter; // so we can simulate a fg request every four cycles
+
+    reg [27:0] counter;
+    assign frozen = counter[27];
+    reg [1:0] clock_divider;
     always @(posedge clk160) begin
-        if (shifter == 4'b0000) begin
-            shifter <= 4'b1000;
-            x <= 0;
-            y <= 0;
-        end else begin
-            shifter <= {shifter[2:0],shifter[3]};
-        end
-        if (shifter[2]) begin
-            if (x == 1055) begin
+        counter <= counter+1;
+        clock_divider <= clock_divider + 1;
+        
+        request_active <= 1'b0;
+        if (clock_divider == 2'b00) begin
+            x <= x + 1;
+            if (x+1 == 1056) begin
                 x <= 0;
-                if(y == 627) begin
+                y <= y+1;
+                if(y + 1 == 628) begin
                     y <= 0;
-                end else begin
-                    y <= y+1;
                 end
-            end else begin
-                x <= x + 1;
             end
+            request_active <= 1'b1;
         end
     end
     // make request
-    assign request_active = shifter[3];
     // pass result to dac
     assign dac_fifo_write = data_ready;
     assign dac_fifo_in = {x, y, data};
-
 
 endmodule
