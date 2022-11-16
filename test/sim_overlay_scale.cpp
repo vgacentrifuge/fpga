@@ -4,7 +4,7 @@
 
 #include "Vpipeline_foreground_overlay.h"
 #include "Vpipeline_foreground_scale_1080.h"
-#include "constants.h"
+#include "control.h"
 #include "png_helper.h"
 
 Vpipeline_foreground_scale_1080 *scaler;

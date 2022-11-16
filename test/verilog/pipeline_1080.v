@@ -21,23 +21,15 @@ module pipeline_1080 (
     output reg [11:0] pixel_y_out,
 
     // Control signals:
-
-    // How to merge the background and foreground
-    // 0: No foreground
-    // 1: Chroma key'd
-    // 2: Direct overlay
     input [1:0] ctrl_overlay_mode,
-    
-    // Foreground scaling, i.e. if we should change the size of the foreground
-    // See pipeline_foreground_scale.v for more info
     input [1:0] ctrl_fg_scale,
-
-    // Foreground offsets, i.e. where to position the foreground on the screen
-    // See pipeline_foreground_offset.v for more info
     input signed [12:0] ctrl_fg_offset_x,
     input signed [12:0] ctrl_fg_offset_y,
-
-    input [3:0] ctrl_fg_opacity
+    input [3:0] ctrl_fg_opacity,
+    input [11:0] ctrl_fg_clip_left,
+    input [11:0] ctrl_fg_clip_right,
+    input [11:0] ctrl_fg_clip_top,
+    input [11:0] ctrl_fg_clip_bottom
 );
 
     pipeline #(
@@ -63,6 +55,10 @@ module pipeline_1080 (
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
-        .ctrl_fg_opacity(ctrl_fg_opacity)
+        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_clip_left(ctrl_fg_clip_left),
+        .ctrl_fg_clip_right(ctrl_fg_clip_right),
+        .ctrl_fg_clip_top(ctrl_fg_clip_top),
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom)
     );
 endmodule

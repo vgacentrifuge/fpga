@@ -13,7 +13,7 @@ else
 endif
 
 SRC=$(wildcard src/*.v) $(wildcard src/*/*.v)
-CPP=include/lodepng/lodepng.cpp include/png_helper.cpp include/spi_helper.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
+CPP=include/lodepng/lodepng.cpp include/png_helper.cpp include/spi_helper.cpp include/control.cpp $(VERILATOR_FOLDER)/include/verilated.cpp $(wildcard obj_dir/*.cpp)
 INC=-I$(VERILATOR_FOLDER)/include -I$(VERILATOR_FOLDER)/include/vltstd -Iinclude -Iinclude/lodepng -Iobj_dir
 
 VERILATOR_INCLUDE_FOLDERS=$(sort $(dir $(SRC)))
