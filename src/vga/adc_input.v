@@ -26,9 +26,6 @@ parameter V_FRONT_PORCH = 1;
 parameter H_BACK_PORCH  = 88;
 parameter V_BACK_PORCH  = 23;
 
-// The ADC rgb has 18 cycles of latency, while HSYNC has 5. We compensate
-parameter H_SYNC_SIGNAL_HEADSTART = 18-5;
-
 reg h_sync_state;
 reg v_sync_state;
 
@@ -57,9 +54,9 @@ always @ (posedge hw_pixel_clk) begin
         
     if(~h_sync_state && h_sync_history == 5'b11111) begin
         // Only update the x coord if we are at least a few pixels away from matching up with the given HSYNC
-        if(x < X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART - 3 
-        || x > X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART + 1)
-            x <= X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - H_SYNC_SIGNAL_HEADSTART;
+        if(x < X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 - 3 
+        || x > X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1 + 1)
+            x <= X_RES + H_SYNC + H_FRONT_PORCH + HISTORY_WIDTH + 1;
         h_sync_state <= 1;
     end
     if(h_sync_state && h_sync_history == 5'b00000)
