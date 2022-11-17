@@ -14,7 +14,7 @@ module sram_wrapper (
     // ADC FIFO input
     input [37:0] adc_pixel_data,
     input adc_pixel_ready,
-    output reg adc_pixel_read,
+    output adc_pixel_read,
     // Pipeline request signals
     input request_active,
     input [10:0] request_x,
@@ -34,6 +34,8 @@ module sram_wrapper (
 
 parameter X_RES = 800;
 parameter Y_RES = 600;
+
+parameter SRAM_DELAY=5;
 
 // Interface module
 reg sram_we;
@@ -58,24 +60,24 @@ sram_interface sram(
 );
 
 
-reg [5:0] read_issued;
-reg [5:0] out_of_bounds_read;
+reg [SRAM_DELAY-1:0] read_issued;
+reg [SRAM_DELAY-1:0] out_of_bounds_read;
 
 always @(posedge clk) begin
-    adc_pixel_read <= 0;
+    //adc_pixel_read <= 0;
     sram_data_in <= 17'b0;
     sram_we <= 0;
-    read_issued <= {read_issued[4:0], 1'b0};
-    out_of_bounds_read <= {out_of_bounds_read[4:0], 1'b0};
+    read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b0};
+    out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b0};
     if (request_active) begin
         // Read from SRAM
         if (request_x >= X_RES || request_y >= Y_RES) begin
             // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
-            out_of_bounds_read <= {out_of_bounds_read[4:0], 1'b1};
+            out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
         end else begin
             sram_addr <= {request_x[9:0], request_y[9:0]};
         end
-        read_issued <= {read_issued[4:0], 1'b1};
+        read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
     end else begin
         // Attempt to write from elsewhere:
         if (adc_pixel_ready) begin
@@ -87,7 +89,7 @@ always @(posedge clk) begin
                 sram_data_in <= {1'b0, adc_pixel_data[15:0]};
             end 
             // Consume pixel, no matter where it ended up
-            adc_pixel_read <= 1;
+            //adc_pixel_read <= 1;
         end else if (spi_active) begin
             // TODO: Add fifo for storing spi pixels so they can't be skipped during requests
             //       Might also make sense to just assume no fg requests are made during spi image writes
@@ -100,14 +102,14 @@ always @(posedge clk) begin
         end
     end
     // Relay SRAM reads to fg requester
-    if( out_of_bounds_read[5] ) begin
+    if( out_of_bounds_read[SRAM_DELAY-1] ) begin
         request_data <= 16'b0;
     end else begin
-        request_data <= sram_data_out;
+        request_data <= sram_data_out[15:0];
     end
-    request_ready <= read_issued[5];
+    request_ready <= read_issued[SRAM_DELAY-1];
 end
     
-
+assign adc_pixel_read = (request_active && adc_pixel_ready); // we write from adc if there is not a request from pipeline
 
 endmodule

@@ -20,6 +20,8 @@ module sram_interface(
                       output sram_oe,
                       output sram_clk_enable,
                       output sram_clk);
+                      
+    
 
     // Constant signals (for our purposes)
     assign sram_advload     = 0; // active high, we don't burst
@@ -50,7 +52,7 @@ module sram_interface(
         addr_latch <= addr;
         we_latch <= write_enable;
         data_in_latch <= data_in;
-        data_out_latch <= sram_data;
+        data_out_latch <= (oe_hold)?17'b0:sram_data;
     end
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
@@ -74,4 +76,18 @@ module sram_interface(
     // When OE is low (active), the SRAM can write data, so we tristate
     assign sram_data = (oe_hold)?data_hold:17'bz;
     assign data_out = data_out_latch;
+    
+// debug probing
+//    ila_0 ila(
+//        .clk(clk),
+//        .probe0(data_in),
+//        .probe1(addr),
+//        .probe2(write_enable),
+//        .probe3(oe_hold),
+//        .probe4(data_hold),
+//        .probe5(data_out_latch),
+//        .probe6(addr_latch),
+//        .probe7(clk)
+//    );
+
 endmodule
