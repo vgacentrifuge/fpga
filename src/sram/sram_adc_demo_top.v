@@ -42,10 +42,12 @@ module sram_adc_demo_top(
     
     wire clk160;
     wire clk40; // Unused
+    wire clk80;
     clk_wiz_160 clk_wiz(
         .clk_in1(gclk100),
         .clk_out160(clk160),
-        .clk_out40(clk40)
+        .clk_out40(clk40),
+        .clk_out80(clk80)
     );
     
     // ADC 1   
@@ -74,7 +76,7 @@ module sram_adc_demo_top(
         .FIFO_READ_0_rd_data(adc1_fifo_out),
         .FIFO_READ_0_empty(adc1_fifo_empty),
         .FIFO_READ_0_rd_en(adc1_fifo_read),
-        .rd_clk_0(clk160)
+        .rd_clk_0(clk80)
     );
     
     //try having dac clock independant of the adc
@@ -89,7 +91,7 @@ module sram_adc_demo_top(
     pixel_FIFO_dac dac_fifo(
         .FIFO_WRITE_0_wr_data(dac_fifo_in),
         .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(clk160),
+        .wr_clk_0(clk80),
         
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
@@ -122,7 +124,7 @@ module sram_adc_demo_top(
 
     // SRAM module
     sram_wrapper sram(
-        .clk(clk160),
+        .clk(clk80),
         .frozen(frozen),
         // ADC FIFO connection
         .adc_pixel_data(adc1_fifo_out),
@@ -152,14 +154,14 @@ module sram_adc_demo_top(
     );
 
     reg [27:0] counter;
-    assign frozen = counter[27];
-    reg [1:0] clock_divider;
-    always @(posedge clk160) begin
+    assign frozen = 0;//counter[27];
+    reg clock_divider;
+    always @(posedge clk80) begin
         counter <= counter+1;
         clock_divider <= clock_divider + 1;
         
         request_active <= 1'b0;
-        if (clock_divider == 2'b00) begin
+        if (clock_divider == 1'b0) begin
             x <= x + 1;
             if (x+1 == 1056) begin
                 x <= 0;
