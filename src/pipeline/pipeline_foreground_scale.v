@@ -15,10 +15,9 @@ module pipeline_foreground_scale #(
     output reg signed [PRECISION:0] fg_pixel_y,
     output fg_active
 );
-    
-    wire scale_full    = ctrl_foreground_scale == 2'b00;
-    wire scale_half    = ctrl_foreground_scale == 2'b10;
-    wire scale_quarter = ctrl_foreground_scale == 2'b01;
+    localparam SCALE_FULL = 2'b00;
+    localparam SCALE_HALF = 2'b01;
+    localparam SCALE_QUARTER = 2'b10;
     
     wire signed [PRECISION:0] offset_x = pixel_x + fg_offset_x;
     wire signed [PRECISION:0] offset_y = pixel_y + fg_offset_y;
@@ -35,34 +34,33 @@ module pipeline_foreground_scale #(
         active <= 1'b0;
         
         if (output_enable) begin
-            if (scale_full)
-            begin
-                fg_pixel_x <= offset_x;
-                fg_pixel_y <= offset_y;
-                active  <= 1'b1;
-            end
-            else if (scale_half)
-            begin
-                if (offset_x >= RESOLUTION_X / 2 && offset_y >= RESOLUTION_Y / 2)
-                begin
-                    fg_pixel_x <= (offset_x - RESOLUTION_X / 2 + 1) << 1;
-                    fg_pixel_y <= (offset_y - RESOLUTION_Y / 2 + 1) << 1;
+            case (ctrl_foreground_scale)
+                SCALE_FULL: begin
+                    fg_pixel_x <= offset_x;
+                    fg_pixel_y <= offset_y;
                     active  <= 1'b1;
                 end
-                else
-                    active <= 1'b0;
-            end
-            else if (scale_quarter)
-            begin
-                if (offset_x >= 3 * (RESOLUTION_X / 4) && offset_y >= 3 * (RESOLUTION_Y / 4))
-                begin
-                    fg_pixel_x <= (offset_x - 3 * RESOLUTION_X / 4 + 1) << 2;
-                    fg_pixel_y <= (offset_y - 3 * RESOLUTION_Y / 4 + 1) << 2;
-                    active  <= 1'b1;
+                SCALE_HALF: begin
+                    if (offset_x >= RESOLUTION_X / 2 && offset_y >= RESOLUTION_Y / 2)
+                    begin
+                        fg_pixel_x <= (offset_x - RESOLUTION_X / 2 + 1) << 1;
+                        fg_pixel_y <= (offset_y - RESOLUTION_Y / 2 + 1) << 1;
+                        active  <= 1'b1;
+                    end
                 end
-                else
-                    active <= 1'b0;
-            end
+                SCALE_QUARTER: begin
+                    if (offset_x >= 3 * (RESOLUTION_X / 4) && offset_y >= 3 * (RESOLUTION_Y / 4))
+                    begin
+                        fg_pixel_x <= (offset_x - 3 * RESOLUTION_X / 4 + 1) << 2;
+                        fg_pixel_y <= (offset_y - 3 * RESOLUTION_Y / 4 + 1) << 2;
+                        active  <= 1'b1;
+                    end
+                end
+                default: begin
+                    fg_pixel_x <= 0;
+                    fg_pixel_y <= 0;
+                end
+            endcase
         end
     end
 endmodule
