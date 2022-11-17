@@ -6,11 +6,23 @@ module pipeline_1080 (
     input [11:0] pixel_y,
 
     input [15:0] bg_pixel_in,
-    input output_enable, // Whether we are blanking screen
+    // Determines if there is a bg pixel ready in bg_pixel_in
+    input bg_pixel_ready,
+    // Whether we are blanking screen. This is used to skip a few steps
+    // for those pixels. Only read when bg_pixel_ready is high
+    input in_blanking_area,
+
 
     // Foreground coord sent to SRAM, pixel recieved
-    input  [15:0] fg_pixel_in,
-    input  fg_pixel_skip,
+    input [15:0] fg_pixel_in,
+    input fg_pixel_skip,
+    // Not every cycle will have a response to a request. This should be set
+    // to high whenever there is a response ready, whether it be a skip or
+    // pixel data. We expect this to be a response that comes exactly
+    // FOREGROUND_FETCH_CYCLE_DELAY after the request was sent. If not, stuff
+    // will break (massively)
+    input fg_pixel_ready,
+
     output signed [12:0] fg_pixel_request_x,
     output signed [12:0] fg_pixel_request_y,
     output fg_pixel_request_active,
@@ -19,6 +31,7 @@ module pipeline_1080 (
     output reg [15:0] pixel_out,
     output reg [11:0] pixel_x_out,
     output reg [11:0] pixel_y_out,
+    output reg pixel_ready_out,
 
     // Control signals:
     input [1:0] ctrl_overlay_mode,
@@ -42,15 +55,18 @@ module pipeline_1080 (
         .pixel_x(pixel_x),
         .pixel_y(pixel_y),
         .bg_pixel_in(bg_pixel_in),
-        .output_enable(output_enable),
+        .bg_pixel_ready(bg_pixel_ready),
+        .in_blanking_area(in_blanking_area),
         .fg_pixel_in(fg_pixel_in),
         .fg_pixel_skip(fg_pixel_skip),
+        .fg_pixel_ready(fg_pixel_ready),
         .fg_pixel_request_x(fg_pixel_request_x),
         .fg_pixel_request_y(fg_pixel_request_y),
         .fg_pixel_request_active(fg_pixel_request_active),
         .pixel_out(pixel_out),
         .pixel_x_out(pixel_x_out),
         .pixel_y_out(pixel_y_out),
+        .pixel_ready_out(pixel_ready_out),
         .ctrl_overlay_mode(ctrl_overlay_mode),
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),

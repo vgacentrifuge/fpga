@@ -19,24 +19,36 @@ module pipeline #(
 ) (
     input clk,
 
-    // The input position of the current pixel
+    // The input position of the current bg pixel
     input [PRECISION - 1:0] pixel_x,
     input [PRECISION - 1:0] pixel_y,
 
     input [PIXEL_SIZE - 1:0] bg_pixel_in,
-    input output_enable, // Whether we are blanking screen
+    // Determines if there is a bg pixel ready in bg_pixel_in
+    input bg_pixel_ready,
+    // Whether we are blanking screen. This is used to skip a few steps
+    // for those pixels. Only read when bg_pixel_ready is high
+    input in_blanking_area,
 
     // Foreground coord sent to SRAM, pixel recieved
-    input  [PIXEL_SIZE - 1:0] fg_pixel_in,
-    input  fg_pixel_skip,
-    output wire signed [PRECISION:0] fg_pixel_request_x,
-    output wire signed [PRECISION:0] fg_pixel_request_y,
+    input [PIXEL_SIZE - 1:0] fg_pixel_in,
+    input fg_pixel_skip,
+    // Not every cycle will have a response to a request. This should be set
+    // to high whenever there is a response ready, whether it be a skip or
+    // pixel data. We expect this to be a response that comes exactly
+    // FOREGROUND_FETCH_CYCLE_DELAY after the request was sent. If not, stuff
+    // will break (massively)
+    input fg_pixel_ready,
+    
+    output signed [PRECISION:0] fg_pixel_request_x,
+    output signed [PRECISION:0] fg_pixel_request_y,
     output fg_pixel_request_active,
 
     // Resulting pixel. Positions for sanity checks.
     output reg [PIXEL_SIZE - 1:0] pixel_out,
     output reg [PRECISION - 1:0] pixel_x_out,
     output reg [PRECISION - 1:0] pixel_y_out,
+    output reg pixel_ready_out,
 
     // Control signals. See controlled_pipeline.v for more info
     input [1:0] ctrl_overlay_mode,
@@ -49,10 +61,19 @@ module pipeline #(
     input [PRECISION - 1:0] ctrl_fg_clip_top,
     input [PRECISION - 1:0] ctrl_fg_clip_bottom
 );
-    // Buffers while we wait for foreground pixel
-    reg [PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_buffer;
-    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_x_buffer;
-    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY:0] bg_pixel_y_buffer;
+    // Buffers while we wait for foreground pixel. These will mostly contain just zeros,
+    // but I can't think of a cleaner way to handle this. The flow right now is that we
+    // append background pixel data in these buffers if bg_pixel_ready is high, otherwise
+    // we just fill them with zeros. That way, when the fg pixel is ready, the correct bg
+    // pixel data is in the MSBs of these buffers. This also means that the timing of the
+    // bg pixel readiness wont matter, since there is no way for it to have a higher 
+    // frequency than clk.
+    reg [PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_buffer;
+    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_x_buffer;
+    reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_y_buffer;
+    reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_in_blanking_buffer;
+
+    wire perform_foreground_fetch = ~in_blanking_area && bg_pixel_ready;
 
     // Handle foreground fetching
     pipeline_foreground_scale #(
@@ -61,7 +82,7 @@ module pipeline #(
         .RESOLUTION_Y(RESOLUTION_Y)
     ) fg_fetcher(
         .clk(clk),
-        .output_enable(output_enable),
+        .output_enable(perform_foreground_fetch),
         .ctrl_foreground_scale(ctrl_fg_scale),
         .fg_offset_x(ctrl_fg_offset_x),
         .fg_offset_y(ctrl_fg_offset_y),
@@ -90,18 +111,26 @@ module pipeline #(
         .out_fg_request_active(fg_pixel_request_active)
     );
 
-    // Assuming here that a new pixel is ready every clock cycle
+    // Wires that are either 0, or the background pixel data if available
+    wire [PIXEL_SIZE - 1:0] bg_pixel_at_clk = bg_pixel_ready ? bg_pixel_in : {PIXEL_SIZE{1'b0}};
+    wire [PRECISION - 1:0] pixel_x_at_clk = bg_pixel_ready ? pixel_x : {PRECISION{1'b0}};
+    wire [PRECISION - 1:0] pixel_y_at_clk = bg_pixel_ready ? pixel_y : {PRECISION{1'b0}};
+    wire in_blanking_at_clk = bg_pixel_ready ? in_blanking_area : 1'b0;
+
+    // Shift the bg pixel data into the buffers
     always @(posedge clk)
     begin
-        bg_pixel_buffer   <= {bg_pixel_buffer[PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], bg_pixel_in};
-        bg_pixel_x_buffer <= {bg_pixel_x_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_x};
-        bg_pixel_y_buffer <= {bg_pixel_y_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1):0], pixel_y};
+        bg_pixel_buffer       <= {bg_pixel_buffer[PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1) - 1:0], bg_pixel_at_clk};
+        bg_pixel_x_buffer     <= {bg_pixel_x_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1) - 1:0], pixel_x_at_clk};
+        bg_pixel_y_buffer     <= {bg_pixel_y_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1) - 1:0], pixel_y_at_clk};
+        bg_in_blanking_buffer <= {bg_in_blanking_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], in_blanking_at_clk};
     end
 
     // The pixel we are currently processing
     wire [PIXEL_SIZE - 1:0] bg_pixel  = bg_pixel_buffer[PIXEL_SIZE * FOREGROUND_FETCH_CYCLE_DELAY - 1:PIXEL_SIZE * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
     wire [PRECISION - 1:0] bg_pixel_x = bg_pixel_x_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
     wire [PRECISION - 1:0] bg_pixel_y = bg_pixel_y_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
+    wire bg_blanking = bg_in_blanking_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 1];
 
     wire [PIXEL_SIZE - 1:0] chroma_keyed_result;
     wire [PIXEL_SIZE - 1:0] overlayed_result;
@@ -140,20 +169,25 @@ module pipeline #(
     // Output
     always @(posedge clk)
     begin
-        pixel_x_out <= bg_pixel_x;
-        pixel_y_out <= bg_pixel_y;
+        pixel_ready_out <= 1'b0;
 
-        if (~output_enable)
-        begin
-            pixel_out <= {PIXEL_SIZE{1'b0}};
-        end
-        else
-        begin
-            case (ctrl_overlay_mode)
-                2'b01: pixel_out <= chroma_keyed_result;     // Chroma key
-                2'b10: pixel_out <= overlayed_result;        // Overlay foreground
-                default: pixel_out <= bg_pixel;
-            endcase
+        if (fg_pixel_ready) begin
+            pixel_x_out <= bg_pixel_x;
+            pixel_y_out <= bg_pixel_y;
+            pixel_ready_out <= 1'b1;
+
+            if (bg_blanking)
+            begin
+                pixel_out <= {PIXEL_SIZE{1'b0}};
+            end
+            else
+            begin
+                case (ctrl_overlay_mode)
+                    2'b01: pixel_out <= chroma_keyed_result;     // Chroma key
+                    2'b10: pixel_out <= overlayed_result;        // Overlay foreground
+                    default: pixel_out <= bg_pixel;
+                endcase
+            end
         end
     end
 endmodule
