@@ -58,6 +58,8 @@ module controlled_pipeline #(
     output [PRECISION - 1:0] pixel_y_out,
     output pixel_ready_out,
 
+    output reg ctrl_fg_freeze,
+
     // SPI HW interface
     input hw_spi_clk,
     input hw_spi_ss,
@@ -146,6 +148,7 @@ module controlled_pipeline #(
     ) pipeline_spi_control_handle(
         .clk(clk),
         
+        .ctrl_fg_freeze(ctrl_fg_freeze),
         .ctrl_overlay_mode(ctrl_overlay_mode),
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
