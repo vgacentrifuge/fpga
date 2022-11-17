@@ -3,6 +3,7 @@ module pipeline_spi_control #(
 )(
         input clk,
         
+        output reg ctrl_fg_freeze,
         output reg [1:0] ctrl_overlay_mode,        
         output reg [1:0] ctrl_fg_scale,
 
@@ -80,6 +81,9 @@ module pipeline_spi_control #(
             end
             CMD_SET_FOREGROUND_CLIP_BOTTOM: begin
                 ctrl_fg_clip_bottom = argument_buffer[PRECISION - 1:0];
+            end
+            CMD_SET_FOREGROUND_FREEZE: begin
+                ctrl_fg_freeze = argument_buffer[0];
             end
             default: begin
                 // Do nothing
