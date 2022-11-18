@@ -135,10 +135,11 @@ module top(
         .counter_y(dac_pixel_y)
     );
 
-    always @(posedge clk40) begin
+    always @(posedge dac_pixel_clock) begin
         dac_in_pixel_x = dac_pixel_x;
         dac_in_pixel_y = dac_pixel_y;
         dac_in_pixel_data = 16'b0000011111100000;
+        dac_fifo_write = 1'b1;
     end
 
     wire [37:0] dac_fifo_out;
@@ -147,12 +148,13 @@ module top(
     wire [PIXEL_SIZE - 1:0] dac_out_pixel_data = dac_fifo_out[15:0];
 
     wire dac_fifo_empty;
-    wire dac_fifo_write;
+    reg dac_fifo_write;
 
     pixel_FIFO_dac dac_fifo(
         .FIFO_WRITE_0_wr_data(dac_fifo_in),
         .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(clk80),
+        .wr_clk_0(dac_pixel_clock),
+        //.wr_clk_0(clk80),
         
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
@@ -238,7 +240,7 @@ module top(
         // Output to DAC
         //.pixel_out(dac_in_pixel_data),
         //.pixel_x_out(dac_in_pixel_x),
-        //.pixel_y_out(dac_pixel_y),
+        //.pixel_y_out(dac_in_pixel_y),
         //.pixel_ready_out(dac_fifo_write),
 
         // Control signals
