@@ -1,5 +1,6 @@
 module pipeline_spi_control #(
-    parameter PRECISION = 11
+    parameter PRECISION = 11,
+    parameter TRANSPARENCY_PRECISION = 3
 )(
         input clk,
         
@@ -14,6 +15,8 @@ module pipeline_spi_control #(
         output reg [PRECISION - 1:0] ctrl_fg_clip_right,
         output reg [PRECISION - 1:0] ctrl_fg_clip_top,
         output reg [PRECISION - 1:0] ctrl_fg_clip_bottom,
+        
+        output reg [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity,
 
         // SPI HW interface
         input hw_spi_clk,
@@ -29,7 +32,7 @@ module pipeline_spi_control #(
     localparam CMD_SET_FOREGROUND_SCALE = 8'h03;
     localparam CMD_SET_FOREGROUND_OFFSET_X = 8'h04;
     localparam CMD_SET_FOREGROUND_OFFSET_Y = 8'h05;
-    localparam CMD_SET_FOREGROUND_TRANSPARENCY = 8'h06; // Not implemented
+    localparam CMD_SET_FOREGROUND_TRANSPARENCY = 8'h06;
     localparam CMD_SET_FOREGROUND_CLIP_LEFT = 8'h07;
     localparam CMD_SET_FOREGROUND_CLIP_RIGHT = 8'h08;
     localparam CMD_SET_FOREGROUND_CLIP_TOP = 8'h09;
@@ -84,6 +87,9 @@ module pipeline_spi_control #(
             end
             CMD_SET_FOREGROUND_FREEZE: begin
                 ctrl_fg_freeze = argument_buffer[0];
+            end
+            CMD_SET_FOREGROUND_TRANSPARENCY: begin
+                ctrl_fg_opacity = argument_buffer[TRANSPARENCY_PRECISION:0];
             end
             default: begin
                 // Do nothing

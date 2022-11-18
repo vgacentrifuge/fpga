@@ -34,7 +34,17 @@ module top(
     output sram_we_0,
     output sram_clk_0,
     output sram_oe_0,
-    output sram_adv_ld_0
+    output sram_adv_ld_0,
+    
+    // SPI
+    (* mark_debug = "true", keep = "true" *)
+    input spi_clk,
+    (* mark_debug = "true", keep = "true" *)
+    input spi_mosi,
+    (* mark_debug = "true", keep = "true" *)
+    output spi_miso,
+    (* mark_debug = "true", keep = "true" *)
+    input spi_ss
 
     // Auxillary
     //inout [23:0] auxio_bus_0
@@ -197,40 +207,21 @@ module top(
         .hw_sram_clk_enable(sram_cen_0),
         .hw_sram_clk(sram_clk_0)
     );
-
-    localparam FOREGROUND_FETCH_CYCLE_DELAY = 6;
-
-    wire debug_pixel_req;
-    wire signed [PRECISION:0] debug_fg_pixel_req_x;
-    wire signed [PRECISION:0] debug_fg_pixel_req_y;
-
-    reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] debug_fg_pixel_response_delay;
-    reg [PIXEL_SIZE - 1:0] debug_fg_pixel_response_reg;
-    reg debug_fg_pixel_ready;
-
-    always @ (posedge clk80) begin
-        debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_pixel_req};
-
-        if (debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 1]) begin
-            debug_fg_pixel_response_reg <= 16'hFFFF;
-            debug_fg_pixel_ready = 1'b1;
-        end
-        else
-            debug_fg_pixel_ready = 1'b0;
-    end
     
     // Graphics pipeline
-    pipeline #(
+    controlled_pipeline #(
         .PRECISION(PRECISION),
         
         .R_WIDTH(R_WIDTH),
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
 
-        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY),
+        .FOREGROUND_FETCH_CYCLE_DELAY(5),
 
         .RESOLUTION_X(800),
-        .RESOLUTION_Y(600)
+        .RESOLUTION_Y(600),
+        
+        .TRANSPARENCY_PRECISION(3),
     ) pipeline(
         .clk(clk80),
 
@@ -242,25 +233,27 @@ module top(
         .in_blanking_area(1'b0),
 
         // SRAM requests
-        //.fg_pixel_in(fg_pixel_response),
-        //.fg_pixel_skip(~fg_pixel_response_ready),
+        .fg_pixel_in(fg_pixel_response),
+        .fg_pixel_skip(~fg_pixel_response_ready),
         .fg_pixel_ready(1'b1),
-        //.fg_pixel_request_x(fg_pixel_req_x),
-        //.fg_pixel_request_y(fg_pixel_req_y),
-        //.fg_pixel_request_active(fg_pixel_req_active),
-        .fg_pixel_in(debug_fg_pixel_response_reg),
-        .fg_pixel_skip(~debug_fg_pixel_ready),
-        .fg_pixel_request_active(debug_pixel_req),
-        .fg_pixel_request_x(debug_fg_pixel_req_x),
-        .fg_pixel_request_y(debug_fg_pixel_req_y),
+        .fg_pixel_request_x(fg_pixel_req_x),
+        .fg_pixel_request_y(fg_pixel_req_y),
+        .fg_pixel_request_active(fg_pixel_req_active),
         
         // Output to DAC
         .pixel_out(dac_in_pixel_data),
         .pixel_x_out(dac_in_pixel_x),
         .pixel_y_out(dac_in_pixel_y),
         .pixel_ready_out(dac_fifo_write),
-
+        
+        // SPI
+        .hw_spi_clk(spi_clk),
+        .hw_spi_ss(spi_ss),
+        .hw_spi_mosi(spi_mosi),
+        .hw_spi_miso(spi_miso)
+        
         // Control signals
+        /*
         .ctrl_overlay_mode(2'b10),
         .ctrl_fg_scale(2'b01),
         .ctrl_fg_offset_x(12'b0),
@@ -270,6 +263,7 @@ module top(
         .ctrl_fg_clip_top(11'b0),
         .ctrl_fg_clip_bottom(11'b0),
         .ctrl_fg_opacity(4'h8)
+        */
 );
     
 
