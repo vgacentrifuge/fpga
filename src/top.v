@@ -56,7 +56,7 @@ module top(
         .clk_out120(clk120)
     );
     
-    // ADC 2    
+    // ADC 2 (Background)
     wire [37:0] adc2_fifo_in;
     wire [37:0] adc2_fifo_out;
     wire adc2_fifo_empty;
@@ -86,7 +86,7 @@ module top(
         .rd_clk_0(clk80)
     );
     
-    // ADC 1   
+    // ADC 1 (Foreground)
     wire [37:0] adc1_fifo_in;
     wire [37:0] adc1_fifo_out;
     wire adc1_fifo_empty;
@@ -209,7 +209,7 @@ module top(
         debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_fg_pixel_ready};
 
         if (debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 1]) begin
-            debug_fg_pixel_response_reg <= 16'h00FF;
+            debug_fg_pixel_response_reg <= 16'hFFFF;
             debug_fg_pixel_ready = 1'b1;
         end
         else
@@ -224,7 +224,10 @@ module top(
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
 
-        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY)
+        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY),
+
+        .RESOLUTION_X(800),
+        .RESOLUTION_Y(600)
     ) pipeline(
         .clk(clk80),
 
@@ -255,12 +258,12 @@ module top(
         // Control signals
         .ctrl_overlay_mode(2'b10),
         .ctrl_fg_scale(2'b01),
-        .ctrl_fg_offset_x(0),
-        .ctrl_fg_offset_y(0),
-        .ctrl_fg_clip_left(0),
-        .ctrl_fg_clip_right(0),
-        .ctrl_fg_clip_top(0),
-        .ctrl_fg_clip_bottom(0),
+        .ctrl_fg_offset_x(12'b0),
+        .ctrl_fg_offset_y(12'b0),
+        .ctrl_fg_clip_left(11'b0),
+        .ctrl_fg_clip_right(11'b0),
+        .ctrl_fg_clip_top(11'b0),
+        .ctrl_fg_clip_bottom(11'b0),
         .ctrl_fg_opacity(4'h8)
 );
     

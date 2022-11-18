@@ -74,7 +74,7 @@ module pipeline #(
     reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_in_blanking_buffer;
     reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_ready_buffer;
 
-    wire perform_foreground_fetch = ~in_blanking_area && bg_pixel_ready;
+    wire perform_foreground_fetch = (~in_blanking_area) & bg_pixel_ready;
 
     // Handle foreground fetching
     pipeline_foreground_scale #(
