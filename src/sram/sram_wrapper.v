@@ -30,41 +30,41 @@ module sram_wrapper (
     output hw_sram_oe,
     output hw_sram_clk_enable,
     output hw_sram_clk
-    );
-
-parameter X_RES = 800;
-parameter Y_RES = 600;
-
-parameter SRAM_DELAY=5;
-
-// Interface module
-reg sram_we;
-reg [19:0] sram_addr;
-reg [16:0] sram_data_in;
-wire [16:0] sram_data_out;
-
-sram_interface sram(
-    .clk(clk),
-    .write_enable(sram_we),
-    .addr(sram_addr),
-    .data_in(sram_data_in),
-    .data_out(sram_data_out),
-    .sram_addr(hw_sram_addr),
-    .sram_data(hw_sram_data),
-    .sram_advload(hw_sram_advload),
-    .sram_write_enable(hw_sram_write_enable),
-    .sram_chip_enable(hw_sram_chip_enable),
-    .sram_oe(hw_sram_oe),
-    .sram_clk_enable(hw_sram_clk_enable),
-    .sram_clk(hw_sram_clk)
 );
 
+  parameter X_RES = 800;
+  parameter Y_RES = 600;
+
+  parameter SRAM_DELAY = 5;
+
+  // Interface module
+  reg sram_we;
+  reg [19:0] sram_addr;
+  reg [16:0] sram_data_in;
+  wire [16:0] sram_data_out;
+
+  sram_interface sram (
+      .clk(clk),
+      .write_enable(sram_we),
+      .addr(sram_addr),
+      .data_in(sram_data_in),
+      .data_out(sram_data_out),
+      .sram_addr(hw_sram_addr),
+      .sram_data(hw_sram_data),
+      .sram_advload(hw_sram_advload),
+      .sram_write_enable(hw_sram_write_enable),
+      .sram_chip_enable(hw_sram_chip_enable),
+      .sram_oe(hw_sram_oe),
+      .sram_clk_enable(hw_sram_clk_enable),
+      .sram_clk(hw_sram_clk)
+  );
 
 
-reg [SRAM_DELAY-1:0] read_issued;
-reg [SRAM_DELAY-1:0] out_of_bounds_read;
 
-always @(posedge clk) begin
+  reg [SRAM_DELAY-1:0] read_issued;
+  reg [SRAM_DELAY-1:0] out_of_bounds_read;
+
+  always @(posedge clk) begin
     //adc_pixel_read <= 0;
     sram_data_in <= 17'b0;
     sram_we <= 0;
@@ -72,45 +72,45 @@ always @(posedge clk) begin
     read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b0};
     out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b0};
     if (request_active) begin
-        // Read from SRAM
-        if (request_x >= X_RES || request_y >= Y_RES) begin
-            // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
-            out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
-        end else begin
-            sram_addr <= {request_x[9:0], request_y[9:0]};
-        end
-        read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
+      // Read from SRAM
+      if (request_x >= X_RES || request_y >= Y_RES) begin
+        // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
+        out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
+      end else begin
+        sram_addr <= {request_x[9:0], request_y[9:0]};
+      end
+      read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
     end else begin
-        if (adc_pixel_ready) begin
-            // Only write if pixel is within window (and we do not have freeze_frame)
-            if(~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
-                // Write pixel to SRAM, use the 10 lowest bits of x and y
-                sram_addr <= {adc_pixel_data[36:27], adc_pixel_data[25:16]};
-                sram_we <= 1;
-                sram_data_in <= {1'b0, adc_pixel_data[15:0]};
-            end 
-            // Consume pixel, no matter where it ended up
-            //adc_pixel_read <= 1;
-        end else if (spi_active) begin
-            // TODO: Add fifo for storing spi pixels so they can't be skipped during requests
-            //       Might also make sense to just assume no fg requests are made during spi image writes
-            //       We won't be able to send the entire image during a single frame anyway
-            
-            // Write SPI-pixel into SRAM
-            sram_addr <= {spi_pixel_x[9:0], spi_pixel_y[9:0]};
-            sram_we <= 1;
-            sram_data_in <= {1'b0, spi_pixel_in};
+      if (adc_pixel_ready) begin
+        // Only write if pixel is within window (and we do not have freeze_frame)
+        if (~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
+          // Write pixel to SRAM, use the 10 lowest bits of x and y
+          sram_addr <= {adc_pixel_data[36:27], adc_pixel_data[25:16]};
+          sram_we <= 1;
+          sram_data_in <= {1'b0, adc_pixel_data[15:0]};
         end
+        // Consume pixel, no matter where it ended up
+        //adc_pixel_read <= 1;
+      end else if (spi_active) begin
+        // TODO: Add fifo for storing spi pixels so they can't be skipped during requests
+        //       Might also make sense to just assume no fg requests are made during spi image writes
+        //       We won't be able to send the entire image during a single frame anyway
+
+        // Write SPI-pixel into SRAM
+        sram_addr <= {spi_pixel_x[9:0], spi_pixel_y[9:0]};
+        sram_we <= 1;
+        sram_data_in <= {1'b0, spi_pixel_in};
+      end
     end
     // Relay SRAM reads to fg requester
-    if( out_of_bounds_read[SRAM_DELAY-1] ) begin
-        request_data <= 16'b0;
+    if (out_of_bounds_read[SRAM_DELAY-1]) begin
+      request_data <= 16'b0;
     end else begin
-        request_data <= sram_data_out[15:0];
+      request_data <= sram_data_out[15:0];
     end
     request_ready <= read_issued[SRAM_DELAY-1];
-end
-    
-assign adc_pixel_read = (~request_active && adc_pixel_ready && read_issued[0]); // we write from adc if there is not a request from pipeline
+  end
+
+  assign adc_pixel_read = (~request_active && adc_pixel_ready && read_issued[0]); // we write from adc if there is not a request from pipeline
 
 endmodule
