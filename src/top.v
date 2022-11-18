@@ -38,7 +38,12 @@ module top(
 
     // Auxillary
     //inout [23:0] auxio_bus_0
-    );
+);
+    localparam PRECISION = 11;
+    localparam R_WIDTH = 5;
+    localparam G_WIDTH = 6;
+    localparam B_WIDTH = 5;
+    localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH;
     
     wire clk40; // Unused
     wire clk80;
@@ -141,6 +146,11 @@ module top(
         .hw_dacclk_out(dacclk_out_0)
     );
     
+    wire signed [PRECISION:0] fg_pixel_req_x;
+    wire signed [PRECISION:0] fg_pixel_req_y;
+    wire fg_pixel_req_active;
+    wire [PIXEL_SIZE - 1:0] fg_pixel_response;
+    wire fg_pixel_response_ready;
 
     // SRAM module
     sram_wrapper sram(
@@ -156,11 +166,11 @@ module top(
         .spi_pixel_x(0),
         .spi_pixel_y(0),
         // FG requests
-        .request_active(request_active),
-        .request_x(request_x),
-        .request_y(request_y),
-        .request_ready(request_ready),
-        .request_data(request_data),
+        .request_active(fg_pixel_req_active),
+        .request_x(fg_pixel_req_x),
+        .request_y(fg_pixel_req_y),
+        .request_ready(fg_pixel_response_ready),
+        .request_data(fg_pixel_response),
 
         // Hardware port wiring
         .hw_sram_addr(sram_addr_bus_0),
@@ -174,7 +184,12 @@ module top(
     );
     
     // Graphics pipeline
-    pipeline #(.PRECISION(11)) pipeline(
+    pipeline #(
+        .PRECISION(PRECISION),
+        .R_WIDTH(R_WIDTH),
+        .G_WIDTH(G_WIDTH),
+        .B_WIDTH(B_WIDTH)
+    ) pipeline(
         .clk(clk80),
         // Input pixel
         .pixel_x(adc2_fifo_out[37:27]),
@@ -183,12 +198,12 @@ module top(
         .bg_pixel_ready(~adc2_fifo_empty),
         .in_blanking_area(1'b0),
         // SRAM requests
-        .fg_pixel_in(request_data),
-        .fg_pixel_skip(~request_ready),
-        .fg_pixel_ready(request_ready),
-        .fg_pixel_request_x(request_x),
-        .fg_pixel_request_y(request_y),
-        .fg_pixel_request_active(request_active),
+        .fg_pixel_in(fg_pixel_response),
+        .fg_pixel_skip(~fg_pixel_response_ready),
+        .fg_pixel_ready(fg_pixel_response_ready),
+        .fg_pixel_request_x(fg_pixel_req_x),
+        .fg_pixel_request_y(fg_pixel_req_y),
+        .fg_pixel_request_active(fg_pixel_req_active),
         // Output to DAC
         .pixel_out(dac_fifo_in[15:0]),
         .pixel_x_out(dac_fifo_in[37:27]),
@@ -202,7 +217,8 @@ module top(
         .ctrl_fg_clip_left(0),
         .ctrl_fg_clip_right(0),
         .ctrl_fg_clip_top(0),
-        .ctrl_fg_clip_bottom(0)
+        .ctrl_fg_clip_bottom(0),
+        .ctrl_fg_opacity(4'h8)
 );
     
 
