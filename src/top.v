@@ -201,15 +201,15 @@ module top(
     localparam FOREGROUND_FETCH_CYCLE_DELAY = 6;
 
     wire debug_pixel_req;
-    wire [PRECISION - 1:0] debug_fg_pixel_req_x;
-    wire [PRECISION - 1:0] debug_fg_pixel_req_y;
+    wire signed [PRECISION:0] debug_fg_pixel_req_x;
+    wire signed [PRECISION:0] debug_fg_pixel_req_y;
 
     reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] debug_fg_pixel_response_delay;
     reg [PIXEL_SIZE - 1:0] debug_fg_pixel_response_reg;
     reg debug_fg_pixel_ready;
 
     always @ (posedge clk80) begin
-        debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_fg_pixel_ready};
+        debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_pixel_req};
 
         if (debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 1]) begin
             debug_fg_pixel_response_reg <= 16'hFFFF;
