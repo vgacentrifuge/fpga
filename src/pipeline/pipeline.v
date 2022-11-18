@@ -91,7 +91,7 @@ module pipeline #(
         .pixel_y(pixel_y),
         .fg_pixel_x(fg_pixel_request_x),
         .fg_pixel_y(fg_pixel_request_y),
-        .fg_active(fg_scale_request_active)
+        .fg_active(fg_pixel_request_active) // TODO: Change me back
     );
 
     wire fg_scale_request_active;

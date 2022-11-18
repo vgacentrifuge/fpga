@@ -204,6 +204,8 @@ module top(
     reg [PIXEL_SIZE - 1:0] debug_fg_pixel_response_reg;
     reg debug_fg_pixel_ready;
     reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] debug_fg_pixel_response_delay;
+    reg [PRECISION - 1:0] debug_fg_pixel_req_x;
+    reg [PRECISION - 1:0] debug_fg_pixel_req_y;
 
     always @ (posedge clk80) begin
         debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_fg_pixel_ready};
@@ -248,7 +250,9 @@ module top(
         .fg_pixel_in(debug_fg_pixel_response_reg),
         .fg_pixel_skip(~debug_fg_pixel_ready),
         .fg_pixel_request_active(debug_pixel_req),
-
+        .fg_pixel_request_x(debug_fg_pixel_req_x),
+        .fg_pixel_request_y(debug_fg_pixel_req_y),
+        
         // Output to DAC
         .pixel_out(dac_in_pixel_data),
         .pixel_x_out(dac_in_pixel_x),
