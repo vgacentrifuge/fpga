@@ -67,8 +67,11 @@ always @(posedge clk) begin
     sram_data_in <= 17'b0;
     sram_we <= 0;
     sram_addr <= {request_x[9:0], request_y[9:0]};
-    read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b0};
+    
+    read_issued <= {read_issued[SRAM_DELAY-2:0], request_active};
+    
     out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b0};
+
     if (request_active) begin
         // Read from SRAM
         if (request_x >= X_RES || request_y >= Y_RES) begin
@@ -77,7 +80,6 @@ always @(posedge clk) begin
         end else begin
             sram_addr <= {request_x[9:0], request_y[9:0]};
         end
-        read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
     end else begin
         if (adc_pixel_ready) begin
             // Only write if pixel is within window (and we do not have freeze_frame)
