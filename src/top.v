@@ -120,13 +120,12 @@ module top(
     wire dac_pixel_clock = clk40;
 
     // DAC FIFO
-    wire [37:0] dac_fifo_in;
+    reg [37:0] dac_fifo_in;
     wire [PRECISION - 1:0] dac_in_pixel_x = dac_fifo_in[37:27];
     wire [PRECISION - 1:0] dac_in_pixel_y = dac_fifo_in[26:16];
     wire [PIXEL_SIZE - 1:0] dac_in_pixel_data = dac_fifo_in[15:0];
 
     // DEBUGGING
-    /*
     wire [PRECISION - 1:0] dac_pixel_x;
     wire [PRECISION - 1:0] dac_pixel_y;
 
@@ -137,9 +136,10 @@ module top(
     );
 
     always @(posedge clk40) begin
-        da
+        dac_in_pixel_x = dac_pixel_x;
+        dac_in_pixel_y = dac_pixel_y;
+        dac_in_pixel_data = 16'b0000011111100000;
     end
-    */
 
     wire [37:0] dac_fifo_out;
     wire [PRECISION - 1:0] dac_out_pixel_x = dac_fifo_out[37:27];
@@ -236,10 +236,10 @@ module top(
         .fg_pixel_request_active(fg_pixel_req_active),
         
         // Output to DAC
-        .pixel_out(dac_in_pixel_data),
-        .pixel_x_out(dac_in_pixel_x),
-        .pixel_y_out(dac_in_pixel_y),
-        .pixel_ready_out(dac_fifo_write),
+        //.pixel_out(dac_in_pixel_data),
+        //.pixel_x_out(dac_in_pixel_x),
+        //.pixel_y_out(dac_pixel_y),
+        //.pixel_ready_out(dac_fifo_write),
 
         // Control signals
         .ctrl_overlay_mode(2'b10),
