@@ -197,13 +197,34 @@ module top(
         .hw_sram_clk_enable(sram_cen_0),
         .hw_sram_clk(sram_clk_0)
     );
+
+    localparam FOREGROUND_FETCH_CYCLE_DELAY = 6;
+
+    wire debug_pixel_req;
+    reg [PIXEL_SIZE - 1:0] debug_fg_pixel_response_reg;
+    reg debug_fg_pixel_ready;
+    reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] debug_fg_pixel_response_delay;
+
+    always @ (posedge clk80) begin
+        debug_fg_pixel_response_delay <= {debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], debug_fg_pixel_ready};
+
+        if (debug_fg_pixel_response_delay[FOREGROUND_FETCH_CYCLE_DELAY - 1]) begin
+            debug_fg_pixel_response_reg <= 16'h00FF;
+            debug_fg_pixel_ready = 1'b1;
+        end
+        else
+            debug_fg_pixel_ready = 1'b0;
+    end
     
     // Graphics pipeline
     pipeline #(
         .PRECISION(PRECISION),
+        
         .R_WIDTH(R_WIDTH),
         .G_WIDTH(G_WIDTH),
-        .B_WIDTH(B_WIDTH)
+        .B_WIDTH(B_WIDTH),
+
+        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY)
     ) pipeline(
         .clk(clk80),
 
@@ -215,13 +236,16 @@ module top(
         .in_blanking_area(1'b0),
 
         // SRAM requests
-        .fg_pixel_in(fg_pixel_response),
-        .fg_pixel_skip(~fg_pixel_response_ready),
+        //.fg_pixel_in(fg_pixel_response),
+        //.fg_pixel_skip(~fg_pixel_response_ready),
         .fg_pixel_ready(1'b1),
-        .fg_pixel_request_x(fg_pixel_req_x),
-        .fg_pixel_request_y(fg_pixel_req_y),
-        .fg_pixel_request_active(fg_pixel_req_active),
-        
+        //.fg_pixel_request_x(fg_pixel_req_x),
+        //.fg_pixel_request_y(fg_pixel_req_y),
+        //.fg_pixel_request_active(fg_pixel_req_active),
+        .fg_pixel_in(debug_fg_pixel_response_reg),
+        .fg_pixel_skip(~debug_fg_pixel_ready),
+        .fg_pixel_request_active(debug_pixel_req),
+
         // Output to DAC
         .pixel_out(dac_in_pixel_data),
         .pixel_x_out(dac_in_pixel_x),
