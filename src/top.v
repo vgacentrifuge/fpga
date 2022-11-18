@@ -131,7 +131,7 @@ module top(
     wire [PIXEL_SIZE - 1:0] dac_out_pixel_data = dac_fifo_out[15:0];
 
     wire dac_fifo_empty;
-    reg dac_fifo_write;
+    wire dac_fifo_write;
 
     pixel_FIFO_dac dac_fifo(
         .FIFO_WRITE_0_wr_data(dac_fifo_in),
