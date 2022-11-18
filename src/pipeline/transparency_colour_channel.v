@@ -1,6 +1,6 @@
 module transparency_colour_channel #(
-    parameter TRANSPARENCY_PRECISION,
-    parameter CHANNEL_WIDTH
+    parameter TRANSPARENCY_PRECISION = 3,
+    parameter CHANNEL_WIDTH = 6
 ) (
     input [CHANNEL_WIDTH-1:0] src_a_in,
     input [CHANNEL_WIDTH-1:0] src_b_in,

@@ -1,5 +1,5 @@
 set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33 DIRECTION IN} [get_ports gclk100]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {dataclkin_2_IBUF}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {dataclkin_2_IBUF}]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {clk_wiz/inst/clk_in1_clk_wiz_160}]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {dacclk_out_0_OBUF}]
 create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports gclk100]

@@ -12,7 +12,7 @@ module pipeline_chroma_key #(
     input enable,
     input [PIXEL_SIZE - 1:0] bg_pixel_in,
     input [PIXEL_SIZE - 1:0] fg_pixel_in,
-    output reg [PIXEL_SIZE - 1:0] pixel_out
+    output [PIXEL_SIZE - 1:0] pixel_out
 );
     wire [R_WIDTH - 1:0] fg_red = fg_pixel_in[PIXEL_SIZE - 1:PIXEL_SIZE - R_WIDTH];
     wire [G_WIDTH - 1:0] fg_green = fg_pixel_in[PIXEL_SIZE - R_WIDTH - 1:PIXEL_SIZE - R_WIDTH - G_WIDTH];

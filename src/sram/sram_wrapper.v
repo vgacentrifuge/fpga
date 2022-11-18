@@ -9,16 +9,16 @@ module sram_wrapper (
     // SPI image input
     input spi_active,
     input [15:0] spi_pixel_in,
-    input [10:0] spi_pixel_x,
-    input [10:0] spi_pixel_y,
+    input signed [11:0] spi_pixel_x,
+    input signed [11:0] spi_pixel_y,
     // ADC FIFO input
     input [37:0] adc_pixel_data,
     input adc_pixel_ready,
     output adc_pixel_read,
     // Pipeline request signals
     input request_active,
-    input [10:0] request_x,
-    input [10:0] request_y,
+    input signed [11:0] request_x,
+    input signed [11:0] request_y,
     output reg [15:0] request_data,
     output reg request_ready,
     // SRAM signals
