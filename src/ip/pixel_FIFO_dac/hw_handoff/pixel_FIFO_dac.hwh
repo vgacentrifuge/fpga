@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Nov 10 11:16:28 2022" VIVADOVERSION="2021.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Nov 18 13:48:20 2022" VIVADOVERSION="2021.1">
 
   <SYSTEMINFO ARCH="artix7" DEVICE="7a100t" NAME="pixel_FIFO_dac" PACKAGE="ftg256" SPEEDGRADE="-1"/>
 
@@ -113,8 +113,8 @@
         <PARAMETER NAME="C_PROG_EMPTY_THRESH_ASSERT_VAL" VALUE="6"/>
         <PARAMETER NAME="C_PROG_EMPTY_THRESH_NEGATE_VAL" VALUE="7"/>
         <PARAMETER NAME="C_PROG_EMPTY_TYPE" VALUE="0"/>
-        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="1003"/>
-        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="1002"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_ASSERT_VAL" VALUE="1011"/>
+        <PARAMETER NAME="C_PROG_FULL_THRESH_NEGATE_VAL" VALUE="1010"/>
         <PARAMETER NAME="C_PROG_FULL_TYPE" VALUE="0"/>
         <PARAMETER NAME="C_RD_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_RD_DEPTH" VALUE="1024"/>
@@ -132,7 +132,7 @@
         <PARAMETER NAME="C_WR_ACK_LOW" VALUE="0"/>
         <PARAMETER NAME="C_WR_DATA_COUNT_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_WR_DEPTH" VALUE="1024"/>
-        <PARAMETER NAME="C_WR_FREQ" VALUE="160"/>
+        <PARAMETER NAME="C_WR_FREQ" VALUE="80"/>
         <PARAMETER NAME="C_WR_PNTR_WIDTH" VALUE="10"/>
         <PARAMETER NAME="C_WR_RESPONSE_LATENCY" VALUE="1"/>
         <PARAMETER NAME="C_MSGON_VAL" VALUE="1"/>
@@ -318,10 +318,10 @@
         <PARAMETER NAME="Read_Data_Count_Width" VALUE="10"/>
         <PARAMETER NAME="Disable_Timing_Violations" VALUE="false"/>
         <PARAMETER NAME="Read_Clock_Frequency" VALUE="40"/>
-        <PARAMETER NAME="Write_Clock_Frequency" VALUE="160"/>
+        <PARAMETER NAME="Write_Clock_Frequency" VALUE="80"/>
         <PARAMETER NAME="Programmable_Full_Type" VALUE="No_Programmable_Full_Threshold"/>
-        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="1003"/>
-        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="1002"/>
+        <PARAMETER NAME="Full_Threshold_Assert_Value" VALUE="1011"/>
+        <PARAMETER NAME="Full_Threshold_Negate_Value" VALUE="1010"/>
         <PARAMETER NAME="Programmable_Empty_Type" VALUE="No_Programmable_Empty_Threshold"/>
         <PARAMETER NAME="Empty_Threshold_Assert_Value" VALUE="6"/>
         <PARAMETER NAME="Empty_Threshold_Negate_Value" VALUE="7"/>

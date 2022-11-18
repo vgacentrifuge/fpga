@@ -43,11 +43,13 @@ module sram_adc_demo_top(
     wire clk160;
     wire clk40; // Unused
     wire clk80;
+    wire clk120;
     clk_wiz_160 clk_wiz(
         .clk_in1(gclk100),
         .clk_out160(clk160),
         .clk_out40(clk40),
-        .clk_out80(clk80)
+        .clk_out80(clk80),
+        .clk_out120(clk120)
     );
     
     // ADC 1   
@@ -153,13 +155,14 @@ module sram_adc_demo_top(
         .hw_sram_clk(sram_clk_0)
     );
 
-    reg [27:0] counter;
-    assign frozen = 0;//counter[27];
-    reg clock_divider;
+    reg [28:0] counter;
+    assign frozen = 0;
+    reg [0:0] clock_divider;
     always @(posedge clk80) begin
         counter <= counter+1;
-        clock_divider <= clock_divider + 1;
         
+        clock_divider <= clock_divider + 1;
+                
         request_active <= 1'b0;
         if (clock_divider == 1'b0) begin
             x <= x + 1;

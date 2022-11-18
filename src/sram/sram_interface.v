@@ -66,15 +66,22 @@ module sram_interface(
         data_hold <= data_wait_2;
         oe_hold <= oe_wait_2;
     end
-    
     assign sram_write_enable = ~we_hold;
-    assign sram_oe           = oe_hold; // Active low. When writing, we want NO output!
+    assign sram_oe           = (oe_hold && ~clk); // Active low. When writing, we want NO output!
     assign sram_addr         = addr_hold;
-    assign sram_clk          = clk;
+    
+    
+    clk_wiz_0 sram_clocker(
+        .clk_in80(clk),
+        .clk_out80shift(sram_clk)
+    );
+    
+    
+    //assign sram_clk          = clk;
     
     // control inout:
     // When OE is low (active), the SRAM can write data, so we tristate
-    assign sram_data = (oe_hold)?data_hold:17'bz;
+    assign sram_data = (sram_oe)?data_hold:17'bz;
     assign data_out = data_out_latch;
     
 // debug probing

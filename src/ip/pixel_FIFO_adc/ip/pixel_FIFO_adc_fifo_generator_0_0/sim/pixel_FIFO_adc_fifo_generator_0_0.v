@@ -130,7 +130,7 @@ output wire empty;
     .C_PROG_FULL_TYPE(0),
     .C_RD_DATA_COUNT_WIDTH(10),
     .C_RD_DEPTH(1024),
-    .C_RD_FREQ(160),
+    .C_RD_FREQ(80),
     .C_RD_PNTR_WIDTH(10),
     .C_UNDERFLOW_LOW(0),
     .C_USE_DOUT_RST(0),
