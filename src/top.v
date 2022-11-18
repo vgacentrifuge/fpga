@@ -44,6 +44,7 @@ module top(
     localparam G_WIDTH = 6;
     localparam B_WIDTH = 5;
     localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH;
+    localparam FOREGROUND_FETCH_CYCLE_DELAY = 6;
     
     wire clk40; // Unused
     wire clk80;
@@ -188,7 +189,8 @@ module top(
         .PRECISION(PRECISION),
         .R_WIDTH(R_WIDTH),
         .G_WIDTH(G_WIDTH),
-        .B_WIDTH(B_WIDTH)
+        .B_WIDTH(B_WIDTH),
+        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY)
     ) pipeline(
         .clk(clk80),
         // Input pixel
