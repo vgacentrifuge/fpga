@@ -120,10 +120,10 @@ module top(
     wire dac_pixel_clock = clk40;
 
     // DAC FIFO
-    reg [37:0] dac_fifo_in;
-    wire [PRECISION - 1:0] dac_in_pixel_x = dac_fifo_in[37:27];
-    wire [PRECISION - 1:0] dac_in_pixel_y = dac_fifo_in[26:16];
-    wire [PIXEL_SIZE - 1:0] dac_in_pixel_data = dac_fifo_in[15:0];
+    wire [37:0] dac_fifo_in = {dac_in_pixel_x, dac_in_pixel_y, dac_in_pixel_data};
+    reg [PRECISION - 1:0] dac_in_pixel_x;
+    reg [PRECISION - 1:0] dac_in_pixel_y;
+    reg [PIXEL_SIZE - 1:0] dac_in_pixel_data;
 
     // DEBUGGING
     wire [PRECISION - 1:0] dac_pixel_x;
@@ -164,9 +164,9 @@ module top(
     dac_handle dac(
         .pixelclk(dac_pixel_clock),
         .has_pixel(~dac_fifo_empty),
-        .pixel_in(dac_fifo_out[15:0]),
-        .pixel_x(dac_fifo_out[37:27]),
-        .pixel_y(dac_fifo_out[26:16]),
+        .pixel_in(dac_out_pixel_data),
+        .pixel_x(dac_out_pixel_x),
+        .pixel_y(dac_out_pixel_y),
         
         .hw_colour_bus(colour_bus_0),
         .hw_hsync_out(hsync_out_0),
