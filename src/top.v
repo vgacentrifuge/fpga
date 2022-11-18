@@ -132,13 +132,26 @@ module top(
         .rd_clk_0(dac_pixel_clock)
     );
     
+    wire [PRECISION - 1:0] dac_pixel_x;
+    wire [PRECISION - 1:0] dac_pixel_y;
+
+    pixel_counter #(.PRECISION(PRECISION)) counter(
+        .clk(dac_pixel_clock),
+        .counter_x(dac_pixel_x),
+        .counter_y(dac_pixel_y)
+    );
+
     // DAC
     dac_handle dac(
         .pixelclk(dac_pixel_clock),
-        .has_pixel(~dac_fifo_empty),
-        .pixel_in(dac_fifo_out[15:0]),
-        .pixel_x(dac_fifo_out[37:27]),
-        .pixel_y(dac_fifo_out[26:16]),
+        .has_pixel(1'b1),
+        .pixel_x(dac_pixel_x),
+        .pixel_y(dac_pixel_y),
+        .pixel_in(16'b1111100000000000),
+        //.has_pixel(~dac_fifo_empty),
+        //.pixel_in(dac_fifo_out[15:0]),
+        //.pixel_x(dac_fifo_out[37:27]),
+        //.pixel_y(dac_fifo_out[26:16]),
         
         .hw_colour_bus(colour_bus_0),
         .hw_hsync_out(hsync_out_0),

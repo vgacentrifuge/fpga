@@ -59,8 +59,6 @@ sram_interface sram(
     .sram_clk(hw_sram_clk)
 );
 
-
-
 reg [SRAM_DELAY-1:0] read_issued;
 reg [SRAM_DELAY-1:0] out_of_bounds_read;
 
