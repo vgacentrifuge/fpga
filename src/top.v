@@ -44,7 +44,6 @@ module top(
     localparam G_WIDTH = 6;
     localparam B_WIDTH = 5;
     localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH;
-    localparam FOREGROUND_FETCH_CYCLE_DELAY = 6;
     
     wire clk40; // Unused
     wire clk80;
@@ -58,54 +57,57 @@ module top(
     );
     
     // ADC 2    
-    wire [37:0] adc2_fifo_write_data;
+    wire [37:0] adc2_fifo_in;
+    wire [37:0] adc2_fifo_out;
+    wire adc2_fifo_empty;
     wire adc2_fifo_write_req;
+
     adc_input adc2(
         .hw_pixel_clk(dataclkin_2),
         .hw_rgb_in(colour_bus_2),
         .hw_vsync_in(vsin_2),
         .hw_hsync_in(hsin_2),
         
-        .fifo_write_data(adc2_fifo_write_data[15:0]),
-        .pixel_x(adc2_fifo_write_data[37:27]),
-        .pixel_y(adc2_fifo_write_data[26:16]),
+        .fifo_write_data(adc2_fifo_in[15:0]),
+        .pixel_x(adc2_fifo_in[37:27]),
+        .pixel_y(adc2_fifo_in[26:16]),
         .fifo_write_request(adc2_fifo_write_req)
     );
+
     // ADC 2 FIFO
-    wire adc2_fifo_empty;
-    wire [37:0] adc2_fifo_out;
-    wire adc2_fifo_read;
     pixel_FIFO_adc adc2_fifo(
-        .FIFO_WRITE_0_wr_data(adc2_fifo_write_data),
+        .FIFO_WRITE_0_wr_data(adc2_fifo_in),
         .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
         .wr_clk_0(dataclkin_2),
         
         .FIFO_READ_0_rd_data(adc2_fifo_out),
         .FIFO_READ_0_empty(adc2_fifo_empty),
-        .FIFO_READ_0_rd_en(adc2_fifo_read),
+        .FIFO_READ_0_rd_en(1'b1),
         .rd_clk_0(clk80)
     );
     
     // ADC 1   
-    wire [37:0] adc1_fifo_write_data;
+    wire [37:0] adc1_fifo_in;
+    wire [37:0] adc1_fifo_out;
+    wire adc1_fifo_empty;
+    wire adc1_fifo_read;
     wire adc1_fifo_write_req;
+
     adc_input adc1(
         .hw_pixel_clk(dataclkin_1),
         .hw_rgb_in(colour_bus_1),
         .hw_vsync_in(vsin_1),
         .hw_hsync_in(hsin_1),
         
-        .fifo_write_data(adc1_fifo_write_data[15:0]),
-        .pixel_x(adc1_fifo_write_data[37:27]),
-        .pixel_y(adc1_fifo_write_data[26:16]),
+        .fifo_write_data(adc1_fifo_in[15:0]),
+        .pixel_x(adc1_fifo_in[37:27]),
+        .pixel_y(adc1_fifo_in[26:16]),
         .fifo_write_request(adc1_fifo_write_req)
     );
+
     // ADC 1 FIFO
-    wire adc1_fifo_empty;
-    wire [37:0] adc1_fifo_out;
-    wire adc1_fifo_read;
     pixel_FIFO_adc adc1_fifo(
-        .FIFO_WRITE_0_wr_data(adc1_fifo_write_data),
+        .FIFO_WRITE_0_wr_data(adc1_fifo_in),
         .FIFO_WRITE_0_wr_en(adc1_fifo_write_req),
         .wr_clk_0(dataclkin_1),
         
@@ -116,23 +118,15 @@ module top(
     );
     
     wire dac_pixel_clock = clk40;
+
     // DAC FIFO
-    wire [37:0] dac_fifo_out;
     wire [37:0] dac_fifo_in;
-    wire dac_fifo_empty;
-    wire dac_fifo_write;
-    wire dac_fifo_read;
-    pixel_FIFO_dac dac_fifo(
-        .FIFO_WRITE_0_wr_data(dac_fifo_in),
-        .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(clk80),
-        
-        .FIFO_READ_0_rd_data(dac_fifo_out),
-        .FIFO_READ_0_empty(dac_fifo_empty),
-        .FIFO_READ_0_rd_en(dac_fifo_read),
-        .rd_clk_0(dac_pixel_clock)
-    );
-    
+    wire [PRECISION - 1:0] dac_in_pixel_x = dac_fifo_in[37:27];
+    wire [PRECISION - 1:0] dac_in_pixel_y = dac_fifo_in[26:16];
+    wire [PIXEL_SIZE - 1:0] dac_in_pixel_data = dac_fifo_in[15:0];
+
+    // DEBUGGING
+    /*
     wire [PRECISION - 1:0] dac_pixel_x;
     wire [PRECISION - 1:0] dac_pixel_y;
 
@@ -142,17 +136,37 @@ module top(
         .counter_y(dac_pixel_y)
     );
 
+    always @(posedge clk40) begin
+        da
+    end
+    */
+
+    wire [37:0] dac_fifo_out;
+    wire [PRECISION - 1:0] dac_out_pixel_x = dac_fifo_out[37:27];
+    wire [PRECISION - 1:0] dac_out_pixel_y = dac_fifo_out[26:16];
+    wire [PIXEL_SIZE - 1:0] dac_out_pixel_data = dac_fifo_out[15:0];
+
+    wire dac_fifo_empty;
+    wire dac_fifo_write;
+
+    pixel_FIFO_dac dac_fifo(
+        .FIFO_WRITE_0_wr_data(dac_fifo_in),
+        .FIFO_WRITE_0_wr_en(dac_fifo_write),
+        .wr_clk_0(clk80),
+        
+        .FIFO_READ_0_rd_data(dac_fifo_out),
+        .FIFO_READ_0_empty(dac_fifo_empty),
+        .FIFO_READ_0_rd_en(1'b1),
+        .rd_clk_0(dac_pixel_clock)
+    );
+
     // DAC
     dac_handle dac(
         .pixelclk(dac_pixel_clock),
-        .has_pixel(1'b1),
-        .pixel_x(dac_pixel_x),
-        .pixel_y(dac_pixel_y),
-        .pixel_in(16'b1111100000000000),
-        //.has_pixel(~dac_fifo_empty),
-        //.pixel_in(dac_fifo_out[15:0]),
-        //.pixel_x(dac_fifo_out[37:27]),
-        //.pixel_y(dac_fifo_out[26:16]),
+        .has_pixel(~dac_fifo_empty),
+        .pixel_in(dac_fifo_out[15:0]),
+        .pixel_x(dac_fifo_out[37:27]),
+        .pixel_y(dac_fifo_out[26:16]),
         
         .hw_colour_bus(colour_bus_0),
         .hw_hsync_out(hsync_out_0),
@@ -202,16 +216,17 @@ module top(
         .PRECISION(PRECISION),
         .R_WIDTH(R_WIDTH),
         .G_WIDTH(G_WIDTH),
-        .B_WIDTH(B_WIDTH),
-        .FOREGROUND_FETCH_CYCLE_DELAY(FOREGROUND_FETCH_CYCLE_DELAY)
+        .B_WIDTH(B_WIDTH)
     ) pipeline(
         .clk(clk80),
+
         // Input pixel
         .pixel_x(adc2_fifo_out[37:27]),
         .pixel_y(adc2_fifo_out[26:16]),
         .bg_pixel_in(adc2_fifo_out[15:0]),
         .bg_pixel_ready(~adc2_fifo_empty),
         .in_blanking_area(1'b0),
+
         // SRAM requests
         .fg_pixel_in(fg_pixel_response),
         .fg_pixel_skip(~fg_pixel_response_ready),
@@ -219,11 +234,13 @@ module top(
         .fg_pixel_request_x(fg_pixel_req_x),
         .fg_pixel_request_y(fg_pixel_req_y),
         .fg_pixel_request_active(fg_pixel_req_active),
+        
         // Output to DAC
-        .pixel_out(dac_fifo_in[15:0]),
-        .pixel_x_out(dac_fifo_in[37:27]),
-        .pixel_y_out(dac_fifo_in[26:16]),
+        .pixel_out(dac_in_pixel_data),
+        .pixel_x_out(dac_in_pixel_x),
+        .pixel_y_out(dac_in_pixel_y),
         .pixel_ready_out(dac_fifo_write),
+
         // Control signals
         .ctrl_overlay_mode(2'b10),
         .ctrl_fg_scale(2'b00),
