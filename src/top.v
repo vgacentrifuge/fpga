@@ -117,7 +117,7 @@ module top(
         .rd_clk_0(clk80)
     );
     
-    wire dac_pixel_clock = clk40;
+    wire dac_pixel_clock = dataclkin_2;
 
     // DAC FIFO
     wire [37:0] dac_fifo_in;
@@ -230,7 +230,7 @@ module top(
 
         // Control signals
         .ctrl_overlay_mode(2'b10),
-        .ctrl_fg_scale(2'b00),
+        .ctrl_fg_scale(2'b01),
         .ctrl_fg_offset_x(0),
         .ctrl_fg_offset_y(0),
         .ctrl_fg_clip_left(0),
