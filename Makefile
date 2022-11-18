@@ -68,5 +68,5 @@ sim_spi_control: pre_sim test/verilog/pipeline_spi_control_16b.cpp test/sim_spi_
 
 format: $(SRC)
 	for file in $^ ; do \
-		$(JAVA_EXEC) -jar format/verilog-format.jar -f $$file -s format/verilog-format.properties ; \
+		verible-verilog-format --inplace $$file ; \
 	done

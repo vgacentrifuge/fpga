@@ -4,9 +4,9 @@
  */
 
 // All the ports here are hardware ports
-module top(
+module top (
     input gclk100,
-    
+
     // ADC 1
     input [15:0] colour_bus_1,
     input dataclkin_1,
@@ -18,7 +18,7 @@ module top(
     input dataclkin_2,
     input vsin_2,
     input hsin_2,
-    
+
     // DAC 0
     output [15:0] colour_bus_0,
     output hsync_out_0,
@@ -26,94 +26,94 @@ module top(
     output dacclk_out_0
 
     // SRAM
-//    inout [35:0] sram_data_bus_0,
-//    output [19:0] sram_addr_bus_0,
-//    output sram_ce1p3_0,
-//    output sram_ce2_0,
-//    output sram_cen_0,
-//    output sram_we_0,
-//    output sram_clk_0,
-//    output sram_oe_0,
-//    output sram_adv_ld_0
+    //    inout [35:0] sram_data_bus_0,
+    //    output [19:0] sram_addr_bus_0,
+    //    output sram_ce1p3_0,
+    //    output sram_ce2_0,
+    //    output sram_cen_0,
+    //    output sram_we_0,
+    //    output sram_clk_0,
+    //    output sram_oe_0,
+    //    output sram_adv_ld_0
 
     // Auxillary
     //inout [23:0] auxio_bus_0
-    );
-    
-    wire clk160;
-    wire clk40; // Unused
-    clk_wiz_160 clk_wiz(
-        .clk_in1(gclk100),
-        .clk_out160(clk160),
-        .clk_out40(clk40)
-    );
-    
-    // ADC 2    
-    wire [37:0] adc2_fifo_write_data;
-    wire adc2_fifo_write_req;
-    adc_input adc2(
-        .hw_pixel_clk(dataclkin_2),
-        .hw_rgb_in(colour_bus_2),
-        .hw_vsync_in(vsin_2),
-        .hw_hsync_in(hsin_2),
-        
-        .fifo_write_data(adc2_fifo_write_data[15:0]),
-        .pixel_x(adc2_fifo_write_data[37:27]),
-        .pixel_y(adc2_fifo_write_data[26:16]),
-        .fifo_write_request(adc2_fifo_write_req)
-    );
-    // ADC 2 FIFO
-    wire adc2_fifo_empty;
-    wire [37:0] adc2_fifo_out;
-    wire adc2_fifo_read;
-    pixel_FIFO_adc adc2_fifo(
-        .FIFO_WRITE_0_wr_data(adc2_fifo_write_data),
-        .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
-        .wr_clk_0(dataclkin_1),
-        
-        .FIFO_READ_0_rd_data(adc2_fifo_out),
-        .FIFO_READ_0_empty(adc2_fifo_empty),
-        .FIFO_READ_0_rd_en(adc2_fifo_read),
-        .rd_clk_0(clk160)
-    );
-    
-    wire dac_pixel_clock = dataclkin_2;
-    // DAC FIFO
-    wire [37:0] dac_fifo_out;
-    wire [37:0] dac_fifo_in;
-    wire dac_fifo_empty;
-    wire dac_fifo_write;
-    wire dac_fifo_read;
-    pixel_FIFO_dac dac_fifo(
-        .FIFO_WRITE_0_wr_data(dac_fifo_in),
-        .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(clk160),
-        
-        .FIFO_READ_0_rd_data(dac_fifo_out),
-        .FIFO_READ_0_empty(dac_fifo_empty),
-        .FIFO_READ_0_rd_en(dac_fifo_read),
-        .rd_clk_0(dac_pixel_clock)
-    );
-    
-    // DAC
-    dac_handle dac(
-        .pixelclk(dac_pixel_clock),
-        .has_pixel(~dac_fifo_empty),
-        .pixel_in(dac_fifo_out[15:0]),
-        .pixel_x(dac_fifo_out[37:27]),
-        .pixel_y(dac_fifo_out[26:16]),
-        
-        .hw_colour_bus(colour_bus_0),
-        .hw_hsync_out(hsync_out_0),
-        .hw_vsync_out(vsync_out_0),
-        .hw_dacclk_out(dacclk_out_0)
-    );
-    assign dac_fifo_read = 1'b1;
-    assign adc2_fifo_read = 1'b1;
-    assign dac_fifo_write = ~adc2_fifo_empty;
-    assign dac_fifo_in = adc2_fifo_out;
-    
-    /*
+);
+
+  wire clk160;
+  wire clk40;  // Unused
+  clk_wiz_160 clk_wiz (
+      .clk_in1(gclk100),
+      .clk_out160(clk160),
+      .clk_out40(clk40)
+  );
+
+  // ADC 2    
+  wire [37:0] adc2_fifo_write_data;
+  wire adc2_fifo_write_req;
+  adc_input adc2 (
+      .hw_pixel_clk(dataclkin_2),
+      .hw_rgb_in(colour_bus_2),
+      .hw_vsync_in(vsin_2),
+      .hw_hsync_in(hsin_2),
+
+      .fifo_write_data(adc2_fifo_write_data[15:0]),
+      .pixel_x(adc2_fifo_write_data[37:27]),
+      .pixel_y(adc2_fifo_write_data[26:16]),
+      .fifo_write_request(adc2_fifo_write_req)
+  );
+  // ADC 2 FIFO
+  wire adc2_fifo_empty;
+  wire [37:0] adc2_fifo_out;
+  wire adc2_fifo_read;
+  pixel_FIFO_adc adc2_fifo (
+      .FIFO_WRITE_0_wr_data(adc2_fifo_write_data),
+      .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
+      .wr_clk_0(dataclkin_1),
+
+      .FIFO_READ_0_rd_data(adc2_fifo_out),
+      .FIFO_READ_0_empty(adc2_fifo_empty),
+      .FIFO_READ_0_rd_en(adc2_fifo_read),
+      .rd_clk_0(clk160)
+  );
+
+  wire dac_pixel_clock = dataclkin_2;
+  // DAC FIFO
+  wire [37:0] dac_fifo_out;
+  wire [37:0] dac_fifo_in;
+  wire dac_fifo_empty;
+  wire dac_fifo_write;
+  wire dac_fifo_read;
+  pixel_FIFO_dac dac_fifo (
+      .FIFO_WRITE_0_wr_data(dac_fifo_in),
+      .FIFO_WRITE_0_wr_en(dac_fifo_write),
+      .wr_clk_0(clk160),
+
+      .FIFO_READ_0_rd_data(dac_fifo_out),
+      .FIFO_READ_0_empty(dac_fifo_empty),
+      .FIFO_READ_0_rd_en(dac_fifo_read),
+      .rd_clk_0(dac_pixel_clock)
+  );
+
+  // DAC
+  dac_handle dac (
+      .pixelclk (dac_pixel_clock),
+      .has_pixel(~dac_fifo_empty),
+      .pixel_in (dac_fifo_out[15:0]),
+      .pixel_x  (dac_fifo_out[37:27]),
+      .pixel_y  (dac_fifo_out[26:16]),
+
+      .hw_colour_bus(colour_bus_0),
+      .hw_hsync_out (hsync_out_0),
+      .hw_vsync_out (vsync_out_0),
+      .hw_dacclk_out(dacclk_out_0)
+  );
+  assign dac_fifo_read = 1'b1;
+  assign adc2_fifo_read = 1'b1;
+  assign dac_fifo_write = ~adc2_fifo_empty;
+  assign dac_fifo_in = adc2_fifo_out;
+
+  /*
     wire read_enable;
     wire write_enable;
     wire data_ready;
@@ -126,8 +126,8 @@ module top(
     wire [9:0] output_x;
     wire [9:0] output_y;
     */
-    
-    /*
+
+  /*
     // SRAM module
     sram_interface sram(
         .clk(gclk100),
@@ -152,7 +152,7 @@ module top(
     );
     */
 
-    /*
+  /*
     // Graphics pipeline
     wire [23:0] ctrls = 24'b011000000000000000000000; // Constant for now
     pipeline pipeline(
