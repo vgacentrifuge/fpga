@@ -20,11 +20,14 @@ module pipeline #(
     input clk,
 
     // The input position of the current bg pixel
+    (* mark_debug = "true", keep = "true" *)
     input [PRECISION - 1:0] pixel_x,
+    (* mark_debug = "true", keep = "true" *)
     input [PRECISION - 1:0] pixel_y,
 
     input [PIXEL_SIZE - 1:0] bg_pixel_in,
     // Determines if there is a bg pixel ready in bg_pixel_in
+    (* mark_debug = "true", keep = "true" *)
     input bg_pixel_ready,
     // Whether we are blanking screen. This is used to skip a few steps
     // for those pixels. Only read when bg_pixel_ready is high
@@ -32,6 +35,7 @@ module pipeline #(
 
     // Foreground coord sent to SRAM, pixel recieved
     input [PIXEL_SIZE - 1:0] fg_pixel_in,
+    (* mark_debug = "true", keep = "true" *)
     input fg_pixel_skip,
     // Not every cycle will have a response to a request. This should be set
     // to high whenever there is a response ready, whether it be a skip or
@@ -40,14 +44,21 @@ module pipeline #(
     // will break (massively)
     input fg_pixel_ready,
     
+    (* mark_debug = "true", keep = "true" *)
     output signed [PRECISION:0] fg_pixel_request_x,
+    (* mark_debug = "true", keep = "true" *)
     output signed [PRECISION:0] fg_pixel_request_y,
+    (* mark_debug = "true", keep = "true" *)
     output fg_pixel_request_active,
 
     // Resulting pixel. Positions for sanity checks.
+    (* mark_debug = "true", keep = "true" *)
     output reg [PIXEL_SIZE - 1:0] pixel_out,
+    (* mark_debug = "true", keep = "true" *)
     output reg [PRECISION - 1:0] pixel_x_out,
+    (* mark_debug = "true", keep = "true" *)
     output reg [PRECISION - 1:0] pixel_y_out,
+    (* mark_debug = "true", keep = "true" *)
     output reg pixel_ready_out,
 
     // Control signals. See controlled_pipeline.v for more info
@@ -91,9 +102,10 @@ module pipeline #(
         .pixel_y(pixel_y),
         .fg_pixel_x(fg_pixel_request_x),
         .fg_pixel_y(fg_pixel_request_y),
-        .fg_active(fg_pixel_request_active) // TODO: Change me back
+        .fg_active(fg_scale_request_active)
     );
-
+    
+(* mark_debug = "true", keep = "true" *)
     wire fg_scale_request_active;
 
     // Handle foreground clipping
@@ -174,7 +186,7 @@ module pipeline #(
     begin
         pixel_ready_out <= 1'b0;
 
-        if (fg_pixel_ready & buffer_bg_pixel_ready) begin
+        if (buffer_bg_pixel_ready) begin
             pixel_x_out <= bg_pixel_x;
             pixel_y_out <= bg_pixel_y;
             pixel_ready_out <= 1'b1;

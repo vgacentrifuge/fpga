@@ -58,7 +58,7 @@ module controlled_pipeline #(
     output [PRECISION - 1:0] pixel_y_out,
     output pixel_ready_out,
 
-    output reg ctrl_fg_freeze,
+    output ctrl_fg_freeze,
 
     // SPI HW interface
     input hw_spi_clk,
@@ -71,29 +71,29 @@ module controlled_pipeline #(
     // 0: No foreground
     // 1: Chroma key'd
     // 2: Direct overlay
-    reg [1:0] ctrl_overlay_mode;
+    wire [1:0] ctrl_overlay_mode;
     
     // Foreground scaling, i.e. if we should change the size of the foreground
     // See pipeline_foreground_scale.v for more info
-    reg [1:0] ctrl_fg_scale;
+    wire [1:0] ctrl_fg_scale;
 
     // Foreground offsets, i.e. where to position the foreground on the screen
     // See pipeline_foreground_offset.v for more info
-    reg signed [PRECISION:0] ctrl_fg_offset_x;
-    reg signed [PRECISION:0] ctrl_fg_offset_y;
+    wire signed [PRECISION:0] ctrl_fg_offset_x;
+    wire signed [PRECISION:0] ctrl_fg_offset_y;
 
     // Foreground opacity, i.e. how transparent the foreground should be. 0 is
     // fully transparent, 2^TRANSPARENCY_PRECISION is fully opaque
-    reg [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
+    wire [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
 
     // Foreground clipping, i.e. how many pixels to remove from the foreground
     // on each side. Applies to the foreground coordinates before scaling, meaning 
     // that removing 4 pixels at quarter scale will yield in removing 1 actual 
     // foreground pixel that would otherwise be displayed
-    reg [PRECISION - 1:0] ctrl_fg_clip_left;
-    reg [PRECISION - 1:0] ctrl_fg_clip_right;
-    reg [PRECISION - 1:0] ctrl_fg_clip_top;
-    reg [PRECISION - 1:0] ctrl_fg_clip_bottom;
+    wire [PRECISION - 1:0] ctrl_fg_clip_left;
+    wire [PRECISION - 1:0] ctrl_fg_clip_right;
+    wire [PRECISION - 1:0] ctrl_fg_clip_top;
+    wire [PRECISION - 1:0] ctrl_fg_clip_bottom;
 
     // Pipeline module instance, using control values from above
     pipeline #(

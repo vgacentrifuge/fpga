@@ -74,7 +74,7 @@ always @(posedge clk) begin
 
     if (request_active) begin
         // Read from SRAM
-        if (request_x >= X_RES || request_y >= Y_RES) begin
+        if (request_x >= X_RES || request_y >= Y_RES || request_x < 0 || request_y < 0) begin
             // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
             out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
         end else begin
