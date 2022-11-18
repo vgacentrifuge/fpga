@@ -72,6 +72,7 @@ module pipeline #(
     reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_x_buffer;
     reg [PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_y_buffer;
     reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_in_blanking_buffer;
+    reg [FOREGROUND_FETCH_CYCLE_DELAY - 1:0] bg_pixel_ready_buffer;
 
     wire perform_foreground_fetch = ~in_blanking_area && bg_pixel_ready;
 
@@ -124,6 +125,7 @@ module pipeline #(
         bg_pixel_x_buffer     <= {bg_pixel_x_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1) - 1:0], pixel_x_at_clk};
         bg_pixel_y_buffer     <= {bg_pixel_y_buffer[PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1) - 1:0], pixel_y_at_clk};
         bg_in_blanking_buffer <= {bg_in_blanking_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], in_blanking_at_clk};
+        bg_pixel_ready_buffer <= {bg_pixel_ready_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 2:0], bg_pixel_ready};
     end
 
     // The pixel we are currently processing
@@ -131,6 +133,7 @@ module pipeline #(
     wire [PRECISION - 1:0] bg_pixel_x = bg_pixel_x_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
     wire [PRECISION - 1:0] bg_pixel_y = bg_pixel_y_buffer[PRECISION * FOREGROUND_FETCH_CYCLE_DELAY - 1:PRECISION * (FOREGROUND_FETCH_CYCLE_DELAY - 1)];
     wire bg_blanking = bg_in_blanking_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 1];
+    wire buffer_bg_pixel_ready = bg_pixel_ready_buffer[FOREGROUND_FETCH_CYCLE_DELAY - 1];
 
     wire [PIXEL_SIZE - 1:0] chroma_keyed_result;
     wire [PIXEL_SIZE - 1:0] overlayed_result;
@@ -171,7 +174,7 @@ module pipeline #(
     begin
         pixel_ready_out <= 1'b0;
 
-        if (fg_pixel_ready) begin
+        if (fg_pixel_ready & buffer_bg_pixel_ready) begin
             pixel_x_out <= bg_pixel_x;
             pixel_y_out <= bg_pixel_y;
             pixel_ready_out <= 1'b1;

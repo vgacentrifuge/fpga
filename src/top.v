@@ -120,27 +120,10 @@ module top(
     wire dac_pixel_clock = clk40;
 
     // DAC FIFO
-    wire [37:0] dac_fifo_in = {dac_in_pixel_x, dac_in_pixel_y, dac_in_pixel_data};
-    reg [PRECISION - 1:0] dac_in_pixel_x;
-    reg [PRECISION - 1:0] dac_in_pixel_y;
-    reg [PIXEL_SIZE - 1:0] dac_in_pixel_data;
-
-    // DEBUGGING
-    wire [PRECISION - 1:0] dac_pixel_x;
-    wire [PRECISION - 1:0] dac_pixel_y;
-
-    pixel_counter #(.PRECISION(PRECISION)) counter(
-        .clk(dac_pixel_clock),
-        .counter_x(dac_pixel_x),
-        .counter_y(dac_pixel_y)
-    );
-
-    always @(posedge dac_pixel_clock) begin
-        dac_in_pixel_x = dac_pixel_x;
-        dac_in_pixel_y = dac_pixel_y;
-        dac_in_pixel_data = 16'b0000011111100000;
-        dac_fifo_write = 1'b1;
-    end
+    wire [37:0] dac_fifo_in;
+    wire [PRECISION - 1:0] dac_in_pixel_x = dac_fifo_in[37:27];
+    wire [PRECISION - 1:0] dac_in_pixel_y = dac_fifo_in[26:16];
+    wire [PIXEL_SIZE - 1:0] dac_in_pixel_data = dac_fifo_in[15:0];
 
     wire [37:0] dac_fifo_out;
     wire [PRECISION - 1:0] dac_out_pixel_x = dac_fifo_out[37:27];
@@ -153,8 +136,7 @@ module top(
     pixel_FIFO_dac dac_fifo(
         .FIFO_WRITE_0_wr_data(dac_fifo_in),
         .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(dac_pixel_clock),
-        //.wr_clk_0(clk80),
+        .wr_clk_0(clk80),
         
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
@@ -185,16 +167,19 @@ module top(
     // SRAM module
     sram_wrapper sram(
         .clk(clk80),
-        .frozen(0),
+        .frozen(1'b0),
+        
         // ADC FIFO connection
         .adc_pixel_data(adc1_fifo_out),
         .adc_pixel_ready(~adc1_fifo_empty),
         .adc_pixel_read(adc1_fifo_read),
+        
         // SPI-pipeline connection (not currently used)
         .spi_active(0),
         .spi_pixel_in(0),
         .spi_pixel_x(0),
         .spi_pixel_y(0),
+
         // FG requests
         .request_active(fg_pixel_req_active),
         .request_x(fg_pixel_req_x),
@@ -232,16 +217,16 @@ module top(
         // SRAM requests
         .fg_pixel_in(fg_pixel_response),
         .fg_pixel_skip(~fg_pixel_response_ready),
-        .fg_pixel_ready(fg_pixel_response_ready),
+        .fg_pixel_ready(1'b1),
         .fg_pixel_request_x(fg_pixel_req_x),
         .fg_pixel_request_y(fg_pixel_req_y),
         .fg_pixel_request_active(fg_pixel_req_active),
         
         // Output to DAC
-        //.pixel_out(dac_in_pixel_data),
-        //.pixel_x_out(dac_in_pixel_x),
-        //.pixel_y_out(dac_in_pixel_y),
-        //.pixel_ready_out(dac_fifo_write),
+        .pixel_out(dac_in_pixel_data),
+        .pixel_x_out(dac_in_pixel_x),
+        .pixel_y_out(dac_in_pixel_y),
+        .pixel_ready_out(dac_fifo_write),
 
         // Control signals
         .ctrl_overlay_mode(2'b10),
