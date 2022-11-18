@@ -17,7 +17,7 @@ module controlled_pipeline #(
     parameter RESOLUTION_Y = 600,
 
     // The amount of cycles it takes for the foreground pixel value to be fetched
-    parameter FOREGROUND_FETCH_CYCLE_DELAY = 3,
+    parameter FOREGROUND_FETCH_CYCLE_DELAY = 5,
 
     // The amount of bits to use for the transparency value. We actually use one
     // more than this value, but don't worry too much about that :)
@@ -84,7 +84,7 @@ module controlled_pipeline #(
 
     // Foreground opacity, i.e. how transparent the foreground should be. 0 is
     // fully transparent, 2^TRANSPARENCY_PRECISION is fully opaque
-    input [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
+    reg [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
 
     // Foreground clipping, i.e. how many pixels to remove from the foreground
     // on each side. Applies to the foreground coordinates before scaling, meaning 
