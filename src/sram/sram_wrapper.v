@@ -60,6 +60,7 @@ sram_interface sram(
 );
 
 
+
 reg [SRAM_DELAY-1:0] read_issued;
 reg [SRAM_DELAY-1:0] out_of_bounds_read;
 
@@ -67,6 +68,7 @@ always @(posedge clk) begin
     //adc_pixel_read <= 0;
     sram_data_in <= 17'b0;
     sram_we <= 0;
+    sram_addr <= {request_x[9:0], request_y[9:0]};
     read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b0};
     out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b0};
     if (request_active) begin
@@ -79,7 +81,6 @@ always @(posedge clk) begin
         end
         read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
     end else begin
-        // Attempt to write from elsewhere:
         if (adc_pixel_ready) begin
             // Only write if pixel is within window (and we do not have freeze_frame)
             if(~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
@@ -110,6 +111,6 @@ always @(posedge clk) begin
     request_ready <= read_issued[SRAM_DELAY-1];
 end
     
-assign adc_pixel_read = (request_active && adc_pixel_ready); // we write from adc if there is not a request from pipeline
+assign adc_pixel_read = (~request_active && adc_pixel_ready && read_issued[0]); // we write from adc if there is not a request from pipeline
 
 endmodule
