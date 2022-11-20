@@ -37,13 +37,9 @@ module top(
     output sram_adv_ld_0,
     
     // SPI
-    (* mark_debug = "true", keep = "true" *)
     input spi_clk,
-    (* mark_debug = "true", keep = "true" *)
     input spi_mosi,
-    (* mark_debug = "true", keep = "true" *)
     output spi_miso,
-    (* mark_debug = "true", keep = "true" *)
     input spi_ss
 
     // Auxillary
@@ -221,7 +217,7 @@ module top(
         .RESOLUTION_X(800),
         .RESOLUTION_Y(600),
         
-        .TRANSPARENCY_PRECISION(3),
+        .TRANSPARENCY_PRECISION(3)
     ) pipeline(
         .clk(clk80),
 
@@ -251,20 +247,7 @@ module top(
         .hw_spi_ss(spi_ss),
         .hw_spi_mosi(spi_mosi),
         .hw_spi_miso(spi_miso)
-        
-        // Control signals
-        /*
-        .ctrl_overlay_mode(2'b10),
-        .ctrl_fg_scale(2'b01),
-        .ctrl_fg_offset_x(12'b0),
-        .ctrl_fg_offset_y(12'b0),
-        .ctrl_fg_clip_left(11'b0),
-        .ctrl_fg_clip_right(11'b0),
-        .ctrl_fg_clip_top(11'b0),
-        .ctrl_fg_clip_bottom(11'b0),
-        .ctrl_fg_opacity(4'h8)
-        */
-);
+    );
     
 
 endmodule

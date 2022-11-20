@@ -4,16 +4,14 @@
 // Freezeframe is sort of handled, but should be changed to only stop reading adc at the end of a frame so we avoid tearing
 module sram_wrapper #(
     // Resolution of FG image, reads and writes from outside this range are ignored or return black pixels
-    parameter X_RES = 800;
-    parameter Y_RES = 600;
+    parameter X_RES = 800,
+    parameter Y_RES = 600,
 
     // The amount of bits used to represent an unsigned position on screen
-    parameter PRECISION = 11;
+    parameter PRECISION = 11,
 
     // The delay between the issuing of a FG-request and the resulting output, should not be changed
-    parameter SRAM_DELAY=5;
-
-
+    localparam SRAM_DELAY = 5
 )(
     // module signals
     input clk,

@@ -2,10 +2,13 @@ module transparency_colour_channel #(
     parameter TRANSPARENCY_PRECISION = 3,
     parameter CHANNEL_WIDTH = 6
 ) (
+    (* mark_debug = "true", keep = "true" *)
     input [CHANNEL_WIDTH-1:0] src_a_in,
+    (* mark_debug = "true", keep = "true" *)
     input [CHANNEL_WIDTH-1:0] src_b_in,
     // This should be between 0 and 2^TRANSPARENCY_PRECISION
     input [TRANSPARENCY_PRECISION:0] src_a_proportion, 
+    (* mark_debug = "true", keep = "true" *)
     output [CHANNEL_WIDTH-1:0] channel_out
 );
     wire [TRANSPARENCY_PRECISION:0] src_b_proportion           = {1'b1, {TRANSPARENCY_PRECISION{1'b0}}} - src_a_proportion;
