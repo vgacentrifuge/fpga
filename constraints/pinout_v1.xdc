@@ -131,6 +131,11 @@ set_property -dict { PACKAGE_PIN R11 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_po
 set_property -dict { PACKAGE_PIN T13 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_oe_0]
 set_property -dict { PACKAGE_PIN R13 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_adv_ld_0]
 
+set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports { spi_clk }]
+set_property -dict { PACKAGE_PIN D4 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports { spi_mosi }]
+set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports { spi_ss }]
+set_property -dict { PACKAGE_PIN D5 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports { spi_miso }]
+
 #create_interface auxio_0
 #set_property INTERFACE auxio_0 [get_ports { auxio_bus_0[0] auxio_bus_0[1] auxio_bus_0[2] auxio_bus_0[3] auxio_bus_0[4] auxio_bus_0[5] auxio_bus_0[6] auxio_bus_0[7] auxio_bus_0[8] auxio_bus_0[9] auxio_bus_0[10] auxio_bus_0[11] auxio_bus_0[12] auxio_bus_0[13] auxio_bus_0[14] auxio_bus_0[15] }]
 ## in the schematic it's 1-indexed, here 0-indexed so auxio1=auxio_bus_0[0] and auxio<i>=auxio_bus_0[i-1]
@@ -151,11 +156,7 @@ set_property -dict { PACKAGE_PIN R13 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_po
 #set_property -dict { PACKAGE_PIN A8 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[14]}]
 #set_property -dict { PACKAGE_PIN C9 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[15]}]
 #set_property -dict { PACKAGE_PIN P5 IOSTANDARD LVCMOS18 DIRECTION INOUT } [get_ports {auxio_bus_0[16]}]
-#set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[17]}]
-#set_property -dict { PACKAGE_PIN D4 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[18]}]
-#set_property -dict { PACKAGE_PIN D5 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[19]}]
 #set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[20]}]
-#set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[21]}]
 #set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[22]}]
 #set_property -dict { PACKAGE_PIN E6 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {auxio_bus_0[23]}]
 
