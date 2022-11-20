@@ -11,7 +11,7 @@ make format
 
 ## Simulation
 
-Requires (Verilator)[https://www.veripool.org/verilator/]
+Requires [Verilator](https://www.veripool.org/verilator/)
 
 Run & build simulation with
 ```bash
