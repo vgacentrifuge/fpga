@@ -2,26 +2,57 @@
 // SPI input is currently in danger of overwriting if fg reads are issued simultaneously,
 //   will probably add a FIFO later to deal with it (or we just don't output when reading images)
 // Freezeframe is sort of handled, but should be changed to only stop reading adc at the end of a frame so we avoid tearing
-module sram_wrapper (
+module sram_wrapper #(
+    // Resolution of FG image, reads and writes from outside this range are ignored or return black pixels
+    parameter X_RES = 800;
+    parameter Y_RES = 600;
+
+    // The amount of bits used to represent an unsigned position on screen
+    parameter PRECISION = 11;
+
+    // The delay between the issuing of a FG-request and the resulting output, should not be changed
+    parameter SRAM_DELAY=5;
+
+
+)(
     // module signals
     input clk,
     input frozen,
+
     // SPI image input
+
+    // Should be raised high when there is a pixel ready on the inputs
     input spi_active,
-    input [15:0] spi_pixel_in,
-    input signed [11:0] spi_pixel_x,
-    input signed [11:0] spi_pixel_y,
-    // ADC FIFO input
+    // The pixel to write and its coordinates
+    input [15:0] spi_pixel_in,       
+    input signed [PRECISION:0] spi_pixel_x,
+    input signed [PRECISION:0] spi_pixel_y,
+
+
+    // ADC FIFO input, wire directly to the FIFO
     input [37:0] adc_pixel_data,
     input adc_pixel_ready,
     output adc_pixel_read,
+
+
     // Pipeline request signals
+
+    // Raise high to signal a new request
     input request_active,
-    input signed [11:0] request_x,
-    input signed [11:0] request_y,
+
+    // Coordinates of the desired pixel
+    input signed [PRECISION:0] request_x,
+    input signed [PRECISION:0] request_y,
+
+    // The data of the resulting pixel
     output reg [15:0] request_data,
+
+    // Raised high when the result of a request is ready on request_data
+    // Data is ready SRAM_DELAY cycles after request_active is high
     output reg request_ready,
-    // SRAM signals
+
+
+    // SRAM signals to HW
     output [19:0] hw_sram_addr,
     inout [16:0] hw_sram_data,
     output hw_sram_advload,
@@ -31,11 +62,6 @@ module sram_wrapper (
     output hw_sram_clk_enable,
     output hw_sram_clk
     );
-
-parameter X_RES = 800;
-parameter Y_RES = 600;
-
-parameter SRAM_DELAY=5;
 
 // Interface module
 reg sram_we;
@@ -49,14 +75,14 @@ sram_interface sram(
     .addr(sram_addr),
     .data_in(sram_data_in),
     .data_out(sram_data_out),
-    .sram_addr(hw_sram_addr),
-    .sram_data(hw_sram_data),
-    .sram_advload(hw_sram_advload),
-    .sram_write_enable(hw_sram_write_enable),
-    .sram_chip_enable(hw_sram_chip_enable),
-    .sram_oe(hw_sram_oe),
-    .sram_clk_enable(hw_sram_clk_enable),
-    .sram_clk(hw_sram_clk)
+    .hw_sram_addr(hw_sram_addr),
+    .hw_sram_data(hw_sram_data),
+    .hw_sram_advload(hw_sram_advload),
+    .hw_sram_write_enable(hw_sram_write_enable),
+    .hw_sram_chip_enable(hw_sram_chip_enable),
+    .hw_sram_oe(hw_sram_oe),
+    .hw_sram_clk_enable(hw_sram_clk_enable),
+    .hw_sram_clk(hw_sram_clk)
 );
 
 reg [SRAM_DELAY-1:0] read_issued;
@@ -75,22 +101,19 @@ always @(posedge clk) begin
     if (request_active) begin
         // Read from SRAM
         if (request_x >= X_RES || request_y >= Y_RES || request_x < 0 || request_y < 0) begin
-            // Request is located outside view area, so we can silently ignore SRAM, and output a blank pixel later
+            // Request is located outside view area, so we can silently skip SRAM request, and output a blank pixel later
             out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
         end else begin
             sram_addr <= {request_x[9:0], request_y[9:0]};
         end
     end else begin
-        if (adc_pixel_ready) begin
-            // Only write if pixel is within window (and we do not have freeze_frame)
-            if(~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
-                // Write pixel to SRAM, use the 10 lowest bits of x and y
-                sram_addr <= {adc_pixel_data[36:27], adc_pixel_data[25:16]};
-                sram_we <= 1;
-                sram_data_in <= {1'b0, adc_pixel_data[15:0]};
-            end 
-            // Consume pixel, no matter where it ended up
-            //adc_pixel_read <= 1;
+        // No request active, so we write pixels to SRAM:
+        if (adc_pixel_ready && ~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
+            // We are within frame and not freeze-framing
+            // Write pixel to SRAM, use the 10 lowest bits of x and y
+            sram_addr <= {adc_pixel_data[36:27], adc_pixel_data[25:16]};
+            sram_we <= 1;
+            sram_data_in <= {1'b0, adc_pixel_data[15:0]};
         end else if (spi_active) begin
             // TODO: Add fifo for storing spi pixels so they can't be skipped during requests
             //       Might also make sense to just assume no fg requests are made during spi image writes
@@ -111,6 +134,10 @@ always @(posedge clk) begin
     request_ready <= read_issued[SRAM_DELAY-1];
 end
     
-assign adc_pixel_read = (~request_active && adc_pixel_ready && read_issued[0]); // we write from adc if there is not a request from pipeline
+
+// Consumption of pixel from SRAM, this must not be a register, otherwise the read pixel will not be consumed in the FIFO before
+//      the next cycle, causing us to double-read the same pixel. We should still consume the pixel, even when frozen,
+//      as we need to throw away old values to make room for new ones when we eventually start reading again
+assign adc_pixel_read = (~request_active && adc_pixel_ready);
 
 endmodule
