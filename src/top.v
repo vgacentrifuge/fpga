@@ -28,7 +28,6 @@ module top(
     // SRAM
     inout [16:0] sram_data_bus_0,
     output [19:0] sram_addr_bus_0,
-    output sram_ce1p3_0,
     output sram_ce2_0,
     output sram_cen_0,
     output sram_we_0,
