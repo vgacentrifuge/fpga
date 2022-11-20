@@ -7,7 +7,7 @@
 #include "control.h"
 #include "png_helper.h"
 
-#define FOREGROUND_FETCH_DELAY 3
+#define FOREGROUND_FETCH_DELAY 6
 #define BLANKING_AREA_SIZE 50
 
 Vpipeline_1080 *pipeline;
@@ -38,8 +38,7 @@ void write_fg_request(Image *foreground,
     }
 
     pipeline->fg_pixel_in = fg_pixel_in;
-    pipeline->fg_pixel_skip = !request.active;
-    pipeline->fg_pixel_ready = 1;
+    pipeline->fg_pixel_ready = request.active;
 }
 
 void run_image(Image *foreground, Image *background,
@@ -58,11 +57,12 @@ void run_image(Image *foreground, Image *background,
     pipeline->ctrl_overlay_mode = settings.overlay;
     pipeline->ctrl_fg_offset_x = settings.offset_x;
     pipeline->ctrl_fg_offset_y = settings.offset_y;
-    pipeline->ctrl_fg_opacity = settings.opacity;
+    pipeline->ctrl_fg_transparency = settings.transparency;
     pipeline->ctrl_fg_clip_left = settings.clip_left;
     pipeline->ctrl_fg_clip_right = settings.clip_right;
     pipeline->ctrl_fg_clip_top = settings.clip_top;
     pipeline->ctrl_fg_clip_bottom = settings.clip_bottom;
+    pipeline->ctrl_green_screen_filter = 0b0010010110001100;
     pipeline->bg_pixel_ready = 0;
     pipeline->fg_pixel_ready = 0;
 
@@ -96,7 +96,6 @@ void run_image(Image *foreground, Image *background,
 
             pipeline->bg_pixel_in = bg_pixel_in;
             pipeline->bg_pixel_ready = 1;
-            pipeline->in_blanking_area = blanking_area;
 
             // Run a few iterations to simulate that the pixel clock for BG
             // is much slower than the actual clock
@@ -108,7 +107,7 @@ void run_image(Image *foreground, Image *background,
 
                 if (pipeline->pixel_ready_out) {
                     pixel_out = pipeline->pixel_out;
-                    blanking_area =
+                    bool blanking_area =
                         pipeline->pixel_x_out >= output.getWidth() ||
                         pipeline->pixel_y_out >= output.getHeight();
 
@@ -147,7 +146,7 @@ int main(int argc, char const *argv[]) {
         .overlay = MODE_OVERLAY_DIRECT,
         .offset_x = 0,
         .offset_y = 0,
-        .opacity = 4,
+        .transparency = 4,
         .clip_left = 0,
         .clip_right = 0,
         .clip_top = 0,
@@ -162,7 +161,7 @@ int main(int argc, char const *argv[]) {
 
     int16_t offset_modes[3] = {0, 100, -100};
 
-    uint8_t opacity_modes[3] = {4, 8};
+    uint8_t transparency_modes[2] = {0, 4};
 
     uint16_t clip_modes[3] = {0, 150, 400};
 
@@ -177,7 +176,7 @@ int main(int argc, char const *argv[]) {
                 settings.offset_y = offset_modes[k];
 
                 for (int l = 0; l < 2; l++) {
-                    settings.opacity = opacity_modes[l];
+                    settings.transparency = transparency_modes[l];
 
                     for (int m = 0; m < 3; m++) {
                         settings.clip_left = clip_modes[m];
