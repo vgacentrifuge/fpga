@@ -28,7 +28,7 @@ std::string format_pipeline_mode(pipeline_control_t &ctrl) {
             break;
     }
 
-    mode += "_op_" + std::to_string(ctrl.opacity);
+    mode += "_trs_" + std::to_string(ctrl.transparency);
 
     if (ctrl.offset_x != 0 || ctrl.offset_y != 0) {
         mode += "_off_" + std::to_string(ctrl.offset_x) + "_" + std::to_string(ctrl.offset_y);

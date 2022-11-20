@@ -46,10 +46,23 @@ module top(
     //inout [23:0] auxio_bus_0
 );
     localparam PRECISION = 11;
+    
     localparam R_WIDTH = 5;
     localparam G_WIDTH = 6;
     localparam B_WIDTH = 5;
+
     localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH;
+        
+    localparam X_RES = 800;
+    localparam Y_RES = 600;
+        
+    localparam H_SYNC = 128;
+    localparam V_SYNC = 4;
+        
+    localparam H_FRONT_PORCH = 40;
+    localparam V_FRONT_PORCH = 1;
+    localparam H_BACK_PORCH  = 88;
+    localparam V_BACK_PORCH  = 23;
     
     wire clk40; // Unused
     wire clk80;
@@ -62,36 +75,6 @@ module top(
         .clk_out120(clk120)
     );
     
-    // ADC 2 (Background)
-    wire [37:0] adc2_fifo_in;
-    wire [37:0] adc2_fifo_out;
-    wire adc2_fifo_empty;
-    wire adc2_fifo_write_req;
-
-    adc_input adc2(
-        .hw_pixel_clk(dataclkin_2),
-        .hw_rgb_in(colour_bus_2),
-        .hw_vsync_in(vsin_2),
-        .hw_hsync_in(hsin_2),
-        
-        .fifo_write_data(adc2_fifo_in[15:0]),
-        .pixel_x(adc2_fifo_in[37:27]),
-        .pixel_y(adc2_fifo_in[26:16]),
-        .fifo_write_request(adc2_fifo_write_req)
-    );
-
-    // ADC 2 FIFO
-    pixel_FIFO_adc adc2_fifo(
-        .FIFO_WRITE_0_wr_data(adc2_fifo_in),
-        .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
-        .wr_clk_0(dataclkin_2),
-        
-        .FIFO_READ_0_rd_data(adc2_fifo_out),
-        .FIFO_READ_0_empty(adc2_fifo_empty),
-        .FIFO_READ_0_rd_en(1'b1),
-        .rd_clk_0(clk80)
-    );
-    
     // ADC 1 (Foreground)
     wire [37:0] adc1_fifo_in;
     wire [37:0] adc1_fifo_out;
@@ -99,7 +82,19 @@ module top(
     wire adc1_fifo_read;
     wire adc1_fifo_write_req;
 
-    adc_input adc1(
+    adc_input #( 
+        .PRECISION(PRECISION),
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .X_RES(X_RES),
+        .Y_RES(Y_RES),
+
+        .H_SYNC(H_SYNC),
+        .V_SYNC(V_SYNC),
+
+        .H_FRONT_PORCH(H_FRONT_PORCH),
+        .V_FRONT_PORCH(V_FRONT_PORCH)
+    ) adc1(
         .hw_pixel_clk(dataclkin_1),
         .hw_rgb_in(colour_bus_1),
         .hw_vsync_in(vsin_1),
@@ -123,9 +118,52 @@ module top(
         .rd_clk_0(clk80)
     );
     
-    wire dac_pixel_clock = dataclkin_2;
+    // ADC 2 (Background)
+    wire [37:0] adc2_fifo_in;
+    wire [37:0] adc2_fifo_out;
+    wire adc2_fifo_empty;
+    wire adc2_fifo_write_req;
+
+    adc_input #( 
+        .PRECISION(PRECISION),
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .X_RES(X_RES),
+        .Y_RES(Y_RES),
+
+        .H_SYNC(H_SYNC),
+        .V_SYNC(V_SYNC),
+
+        .H_FRONT_PORCH(H_FRONT_PORCH),
+        .V_FRONT_PORCH(V_FRONT_PORCH)
+    ) adc2(
+        .hw_pixel_clk(dataclkin_2),
+        .hw_rgb_in(colour_bus_2),
+        .hw_vsync_in(vsin_2),
+        .hw_hsync_in(hsin_2),
+        
+        .fifo_write_data(adc2_fifo_in[15:0]),
+        .pixel_x(adc2_fifo_in[37:27]),
+        .pixel_y(adc2_fifo_in[26:16]),
+        .fifo_write_request(adc2_fifo_write_req)
+    );
+
+    // ADC 2 FIFO
+    pixel_FIFO_adc adc2_fifo(
+        .FIFO_WRITE_0_wr_data(adc2_fifo_in),
+        .FIFO_WRITE_0_wr_en(adc2_fifo_write_req),
+        .wr_clk_0(dataclkin_2),
+        
+        .FIFO_READ_0_rd_data(adc2_fifo_out),
+        .FIFO_READ_0_empty(adc2_fifo_empty),
+        .FIFO_READ_0_rd_en(1'b1),
+        .rd_clk_0(clk80)
+    );
+    
 
     // DAC FIFO
+    wire dac_pixel_clock = dataclkin_2;
+
     wire [37:0] dac_fifo_in;
     wire [PRECISION - 1:0] dac_in_pixel_x = dac_fifo_in[37:27];
     wire [PRECISION - 1:0] dac_in_pixel_y = dac_fifo_in[26:16];
@@ -151,7 +189,19 @@ module top(
     );
 
     // DAC
-    dac_handle dac(
+    dac_handle #( 
+        .PRECISION(PRECISION),
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .X_RES(X_RES),
+        .Y_RES(Y_RES),
+
+        .H_SYNC(H_SYNC),
+        .V_SYNC(V_SYNC),
+
+        .H_FRONT_PORCH(H_FRONT_PORCH),
+        .V_FRONT_PORCH(V_FRONT_PORCH)
+    ) dac(
         .pixelclk(dac_pixel_clock),
         .has_pixel(~dac_fifo_empty),
         .pixel_in(dac_out_pixel_data),
@@ -214,8 +264,8 @@ module top(
 
         .FOREGROUND_FETCH_CYCLE_DELAY(5),
 
-        .RESOLUTION_X(800),
-        .RESOLUTION_Y(600),
+        .RESOLUTION_X(X_RES),
+        .RESOLUTION_Y(Y_RES),
         
         .TRANSPARENCY_PRECISION(3)
     ) pipeline(
@@ -226,12 +276,10 @@ module top(
         .pixel_y(adc2_fifo_out[26:16]),
         .bg_pixel_in(adc2_fifo_out[15:0]),
         .bg_pixel_ready(~adc2_fifo_empty),
-        .in_blanking_area(1'b0),
 
         // SRAM requests
         .fg_pixel_in(fg_pixel_response),
-        .fg_pixel_skip(~fg_pixel_response_ready),
-        .fg_pixel_ready(1'b1),
+        .fg_pixel_ready(fg_pixel_response_ready),
         .fg_pixel_request_x(fg_pixel_req_x),
         .fg_pixel_request_y(fg_pixel_req_y),
         .fg_pixel_request_active(fg_pixel_req_active),
@@ -248,6 +296,4 @@ module top(
         .hw_spi_mosi(spi_mosi),
         .hw_spi_miso(spi_miso)
     );
-    
-
 endmodule
