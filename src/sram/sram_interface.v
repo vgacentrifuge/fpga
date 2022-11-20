@@ -11,6 +11,7 @@ module sram_interface(
                       input [19:0] addr,
                       output [16:0] data_out,
                       input [16:0] data_in,
+                      
                       // SRAM signals
                       output [19:0] hw_sram_addr,
                       inout [16:0] hw_sram_data,
@@ -53,8 +54,9 @@ module sram_interface(
         we_latch <= write_enable;
         data_in_latch <= data_in;
         // Mask write data so we get blank pixels if we mess up and attempt to read data from a write cycle
-        data_out_latch <= (oe_hold)?17'b0:sram_data; 
+        data_out_latch <= (oe_hold) ? 17'b0 : hw_sram_data; 
     end
+    
     // place onto sram on negedge, shift registers forward one tick
     always @(negedge clk) begin 
         addr_hold <= addr_latch;
@@ -84,18 +86,4 @@ module sram_interface(
 
     // Connect output to latch
     assign data_out = data_out_latch;
-    
-// debug probing
-//    ila_0 ila(
-//        .clk(clk),
-//        .probe0(data_in),
-//        .probe1(addr),
-//        .probe2(write_enable),
-//        .probe3(oe_hold),
-//        .probe4(data_hold),
-//        .probe5(data_out_latch),
-//        .probe6(addr_latch),
-//        .probe7(clk)
-//    );
-
 endmodule

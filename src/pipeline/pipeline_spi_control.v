@@ -5,7 +5,9 @@ module pipeline_spi_control #(
         input clk,
         
         output reg ctrl_fg_freeze,
-        output reg [1:0] ctrl_overlay_mode,        
+        (* mark_debug = "true", keep = "true" *)
+        output reg [1:0] ctrl_overlay_mode,     
+        (* mark_debug = "true", keep = "true" *)   
         output reg [1:0] ctrl_fg_scale,
 
         output reg signed [PRECISION:0] ctrl_fg_offset_x,
@@ -16,6 +18,7 @@ module pipeline_spi_control #(
         output reg [PRECISION - 1:0] ctrl_fg_clip_top,
         output reg [PRECISION - 1:0] ctrl_fg_clip_bottom,
         
+        (* mark_debug = "true", keep = "true" *)
         output reg [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity,
 
         // SPI HW interface
