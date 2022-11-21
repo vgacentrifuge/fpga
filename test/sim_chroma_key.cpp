@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "../include/png_helper.h"
-#include "Vpipeline_chroma_key.h"
+#include "Vpipeline_mode_chroma_key.h"
 
-Vpipeline_chroma_key *top;
+Vpipeline_mode_chroma_key *top;
 
 void run_pixel(Image &output, Image *bg, Image *fg, int x, int y) {
     PixelRGB bg_pixel;
@@ -14,16 +14,16 @@ void run_pixel(Image &output, Image *bg, Image *fg, int x, int y) {
     bg->get_rgb(x, y, bg_pixel);
     fg->get_rgb(x, y, fg_pixel);
 
-    top->enable = 1;
+    top->fg_pixel_ready = 1;
     top->bg_pixel_in = RGB_TO_PIX(bg_pixel.r, bg_pixel.g, bg_pixel.b);
     top->fg_pixel_in = RGB_TO_PIX(fg_pixel.r, fg_pixel.g, fg_pixel.b);
     top->eval();
 
-    uint8_t r = PIX_TO_R(top->pixel_out);
-    uint8_t g = PIX_TO_G(top->pixel_out);
-    uint8_t b = PIX_TO_B(top->pixel_out);
-
-    output.set_rgba(x, y, {r, g, b, 255});
+    if (top->use_fg_pixel) {
+        output.set_rgba(x, y, {fg_pixel.r, fg_pixel.g, fg_pixel.b, 255});
+    } else {
+        output.set_rgba(x, y, {bg_pixel.r, bg_pixel.g, bg_pixel.b, 255});
+    }
 }
 
 void run_test_pair(const std::string &bg_file, const std::string &fg_file,
@@ -36,6 +36,8 @@ void run_test_pair(const std::string &bg_file, const std::string &fg_file,
         std::cout << "Images must be the same size" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    top->ctrl_green_screen_filter = 0b0010010110001100;
 
     Image output(background->getWidth(), background->getHeight());
 
@@ -55,7 +57,7 @@ void run_test_pair(const std::string &bg_file, const std::string &fg_file,
 int main(int argc, char **argv) {
     Verilated::commandArgs(argc, argv);
 
-    top = new Vpipeline_chroma_key;
+    top = new Vpipeline_mode_chroma_key;
 
     run_test_pair("test/images/test_bg.png", "test/images/test_fg.png",
                   "test_chroma_key.png");

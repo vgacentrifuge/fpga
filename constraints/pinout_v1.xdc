@@ -13,7 +13,6 @@ set_property -dict { PACKAGE_PIN B1 IOSTANDARD LVCMOS33 DIRECTION IN } [get_port
 set_property -dict { PACKAGE_PIN C2 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[3]}]
 set_property -dict { PACKAGE_PIN C1 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[4]}]
 set_property -dict { PACKAGE_PIN D3 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[5]}]
-set_property -dict { PACKAGE_PIN D3 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[5]}]
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[6]}]
 set_property -dict { PACKAGE_PIN B4 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[7]}]
 set_property -dict { PACKAGE_PIN A4 IOSTANDARD LVCMOS33 DIRECTION IN } [get_ports {colour_bus_2[8]}]
@@ -98,7 +97,7 @@ set_property -dict { PACKAGE_PIN J16 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_
 set_property -dict { PACKAGE_PIN L15 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {sram_data_bus_0[14]}]
 set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {sram_data_bus_0[15]}]
 set_property -dict { PACKAGE_PIN M15 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {sram_data_bus_0[16]}]
-# pin 73 is sadly not connected, loosing one data bus
+# pin 73 is sadly not connected, loosing one data bit
 # set_property -dict { PACKAGE_PIN H13 IOSTANDARD LVCMOS33 DIRECTION INOUT } [get_ports {sram_data_bus_0[17]}]
 
 # Address bits, following the schematich, except for address bit 19, which is pin 80
@@ -124,7 +123,6 @@ set_property -dict { PACKAGE_PIN R15 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_po
 # Called D27 in schematic
 set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports {sram_addr_bus_0[19]}]
 
-set_property -dict { PACKAGE_PIN P8 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_ce1p3_0]
 set_property -dict { PACKAGE_PIN R10 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_ce2_0]
 set_property -dict { PACKAGE_PIN R12 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_cen_0]
 set_property -dict { PACKAGE_PIN T12 IOSTANDARD LVCMOS33 DIRECTION OUT } [get_ports sram_we_0]

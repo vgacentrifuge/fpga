@@ -8,19 +8,9 @@ module pipeline_1080 (
     input [15:0] bg_pixel_in,
     // Determines if there is a bg pixel ready in bg_pixel_in
     input bg_pixel_ready,
-    // Whether we are blanking screen. This is used to skip a few steps
-    // for those pixels. Only read when bg_pixel_ready is high
-    input in_blanking_area,
-
 
     // Foreground coord sent to SRAM, pixel recieved
     input [15:0] fg_pixel_in,
-    input fg_pixel_skip,
-    // Not every cycle will have a response to a request. This should be set
-    // to high whenever there is a response ready, whether it be a skip or
-    // pixel data. We expect this to be a response that comes exactly
-    // FOREGROUND_FETCH_CYCLE_DELAY after the request was sent. If not, stuff
-    // will break (massively)
     input fg_pixel_ready,
 
     output signed [12:0] fg_pixel_request_x,
@@ -38,11 +28,12 @@ module pipeline_1080 (
     input [1:0] ctrl_fg_scale,
     input signed [12:0] ctrl_fg_offset_x,
     input signed [12:0] ctrl_fg_offset_y,
-    input [3:0] ctrl_fg_opacity,
+    input [2:0] ctrl_fg_transparency,
     input [11:0] ctrl_fg_clip_left,
     input [11:0] ctrl_fg_clip_right,
     input [11:0] ctrl_fg_clip_top,
-    input [11:0] ctrl_fg_clip_bottom
+    input [11:0] ctrl_fg_clip_bottom,
+    input [15:0] ctrl_green_screen_filter
 );
 
     pipeline #(
@@ -56,9 +47,7 @@ module pipeline_1080 (
         .pixel_y(pixel_y),
         .bg_pixel_in(bg_pixel_in),
         .bg_pixel_ready(bg_pixel_ready),
-        .in_blanking_area(in_blanking_area),
         .fg_pixel_in(fg_pixel_in),
-        .fg_pixel_skip(fg_pixel_skip),
         .fg_pixel_ready(fg_pixel_ready),
         .fg_pixel_request_x(fg_pixel_request_x),
         .fg_pixel_request_y(fg_pixel_request_y),
@@ -71,10 +60,11 @@ module pipeline_1080 (
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
-        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_transparency(ctrl_fg_transparency),
         .ctrl_fg_clip_left(ctrl_fg_clip_left),
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
-        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom)
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
+        .ctrl_green_screen_filter(ctrl_green_screen_filter)
     );
 endmodule
