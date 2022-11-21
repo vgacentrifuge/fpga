@@ -23,6 +23,7 @@ void run_command(SPISlave &slave, command_t command,
     }
 
     for (int i = 0; i < 10; i++) {
+        *slave.clk = i % 2;
         eval();
     }
 

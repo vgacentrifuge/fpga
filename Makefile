@@ -25,7 +25,7 @@ VER_INC=$(patsubst %, -I%, $(VERILATOR_INCLUDE_FOLDERS))
 %.o: %.cpp
 	g++ -std=c++11 $(INC) $(CPP) $< -o $@ 
 	
-.PHONY: lint format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale sim_spi sim_spi_control
+.PHONY: lint format clean purge sim sim_chroma_key sim_full_delay sim_overlay_scale sim_spi sim_spi_control sim_spi_image
 
 lint:
 	verilator -Wall --lint-only $(VER_INC) $(SRC) --top-module top
@@ -65,6 +65,9 @@ sim_pipeline: pre_sim test/verilog/pipeline_1080.cpp test/sim_pipeline.o
 
 sim_spi_control: pre_sim test/verilog/pipeline_spi_control_16b.cpp test/sim_spi_control.o
 	./test/sim_spi_control.o
+
+sim_spi_image: pre_sim test/verilog/pipeline_spi_control_16b.cpp test/sim_spi_image.o
+	./test/sim_spi_image.o
 
 format: $(SRC)
 	for file in $^ ; do \
