@@ -71,6 +71,7 @@ module pipeline_spi_control #(
                 ctrl_fg_clip_right = {PRECISION{1'b0}};
                 ctrl_fg_clip_top = {PRECISION{1'b0}};
                 ctrl_fg_clip_bottom = {PRECISION{1'b0}};
+                ctrl_fg_freeze = 1'b0;
             end
             CMD_SET_FOREGROUND_MODE: begin
                 ctrl_overlay_mode = argument_buffer[1:0];
