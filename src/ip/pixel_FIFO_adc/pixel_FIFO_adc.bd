@@ -98,7 +98,7 @@
             "value": "First_Word_Fall_Through"
           },
           "Read_Clock_Frequency": {
-            "value": "80"
+            "value": "85"
           },
           "Write_Clock_Frequency": {
             "value": "40"

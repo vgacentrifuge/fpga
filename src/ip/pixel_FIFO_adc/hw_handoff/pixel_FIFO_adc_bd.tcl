@@ -174,7 +174,7 @@ proc create_root_design { parentCell } {
    CONFIG.Input_Data_Width {38} \
    CONFIG.Output_Data_Width {38} \
    CONFIG.Performance_Options {First_Word_Fall_Through} \
-   CONFIG.Read_Clock_Frequency {80} \
+   CONFIG.Read_Clock_Frequency {85} \
    CONFIG.Reset_Type {Asynchronous_Reset} \
    CONFIG.Use_Dout_Reset {false} \
    CONFIG.Write_Clock_Frequency {40} \
