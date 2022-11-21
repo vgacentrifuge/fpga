@@ -11,14 +11,21 @@ make format
 
 ## Simulation
 
-Requires (Verilator)[https://www.veripool.org/verilator/]
+Requires [Verilator](https://www.veripool.org/verilator/)
 
-Build simulation with
+Run & build simulation with
 ```bash
-make build_sim
+make <target>
 ```
 
-Run simulation with
+Available simulation targets:
+ - sim_chroma_key 
+ - sim_full_delay
+ - sim_overlay_scale
+ - sim_spi
+ - sim_spi_control
+ 
+## Clean up any generate files with
 ```bash
-make run_sim
+make purge
 ```

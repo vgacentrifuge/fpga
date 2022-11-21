@@ -11,8 +11,8 @@ typedef enum {
 
 typedef enum {
     MODE_OVERLAY_NONE = 0b00,
-    MODE_OVERLAY_CHROMA_KEY = 0b01,
-    MODE_OVERLAY_DIRECT = 0b10
+    MODE_OVERLAY_DIRECT = 0b01,
+    MODE_OVERLAY_CHROMA_KEY = 0b10
 } mode_overlay_t;
 
 typedef enum {
@@ -34,7 +34,7 @@ typedef enum {
 typedef struct {
     mode_overlay_t overlay;
     mode_scale_t scale;
-    uint8_t opacity;
+    uint8_t transparency;
     
     int16_t offset_x;
     int16_t offset_y;

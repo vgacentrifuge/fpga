@@ -33,19 +33,11 @@ module controlled_pipeline #(
     input [PIXEL_SIZE - 1:0] bg_pixel_in,
     // Determines if there is a bg pixel ready in bg_pixel_in
     input bg_pixel_ready,
-    // Whether we are blanking screen. This is used to skip a few steps
-    // for those pixels. Only read when bg_pixel_ready is high
-    input in_blanking_area,
 
 
     // Foreground coord sent to SRAM, pixel recieved
     input [PIXEL_SIZE - 1:0] fg_pixel_in,
-    input fg_pixel_skip,
-    // Not every cycle will have a response to a request. This should be set
-    // to high whenever there is a response ready, whether it be a skip or
-    // pixel data. We expect this to be a response that comes exactly
-    // FOREGROUND_FETCH_CYCLE_DELAY after the request was sent. If not, stuff
-    // will break (massively)
+    // Determines if there is a fg pixel ready in fg_pixel_in
     input fg_pixel_ready,
 
     output signed [PRECISION:0] fg_pixel_request_x,
@@ -82,9 +74,9 @@ module controlled_pipeline #(
     wire signed [PRECISION:0] ctrl_fg_offset_x;
     wire signed [PRECISION:0] ctrl_fg_offset_y;
 
-    // Foreground opacity, i.e. how transparent the foreground should be. 0 is
-    // fully transparent, 2^TRANSPARENCY_PRECISION is fully opaque
-    wire [TRANSPARENCY_PRECISION:0] ctrl_fg_opacity;
+    // Foreground transparency. 0 means that the foreground is completely
+    // opaque
+    wire [TRANSPARENCY_PRECISION - 1:0] ctrl_fg_transparency;
 
     // Foreground clipping, i.e. how many pixels to remove from the foreground
     // on each side. Applies to the foreground coordinates before scaling, meaning 
@@ -117,11 +109,10 @@ module controlled_pipeline #(
         
         .bg_pixel_in(bg_pixel_in),
         .bg_pixel_ready(bg_pixel_ready),
-        .in_blanking_area(in_blanking_area),
         
         .fg_pixel_in(fg_pixel_in),
-        .fg_pixel_skip(fg_pixel_skip),
         .fg_pixel_ready(fg_pixel_ready),
+
         .fg_pixel_request_x(fg_pixel_request_x),
         .fg_pixel_request_y(fg_pixel_request_y),
         .fg_pixel_request_active(fg_pixel_request_active),
@@ -135,11 +126,12 @@ module controlled_pipeline #(
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
-        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_transparency(ctrl_fg_transparency),
         .ctrl_fg_clip_left(ctrl_fg_clip_left),
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
-        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom)
+        .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
+        .ctrl_green_screen_filter(16'b0010010110001100) // Temporarily hardcoded
     );
 
     // SPI control module instance, assigning control values to above
@@ -153,7 +145,7 @@ module controlled_pipeline #(
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
-        .ctrl_fg_opacity(ctrl_fg_opacity),
+        .ctrl_fg_transparency(ctrl_fg_transparency),
         .ctrl_fg_clip_left(ctrl_fg_clip_left),
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
