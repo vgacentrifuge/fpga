@@ -89,7 +89,7 @@ module pipeline_spi_control #(
                 ctrl_fg_freeze = argument_buffer[0];
             end
             CMD_SET_FOREGROUND_TRANSPARENCY: begin
-                ctrl_fg_opacity = argument_buffer[TRANSPARENCY_PRECISION - 1:0];
+                ctrl_fg_transparency = argument_buffer[TRANSPARENCY_PRECISION - 1:0];
             end
             default: begin
                 // Do nothing

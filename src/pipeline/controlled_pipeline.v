@@ -5,11 +5,6 @@ module controlled_pipeline #(
 
     localparam PIXEL_SIZE = R_WIDTH + G_WIDTH + B_WIDTH,
 
-    // Chroma key threshold values
-    parameter RED_PASS = 5'b00100,
-    parameter GREEN_PASS = 6'b101100,
-    parameter BLUE_PASS = 5'b01100,
-    
     // The amount of bits we use to represent an unsigned position on the screen
     parameter PRECISION = 11,
     
@@ -92,10 +87,6 @@ module controlled_pipeline #(
         .R_WIDTH(R_WIDTH),
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
-        
-        .RED_PASS(RED_PASS),
-        .GREEN_PASS(GREEN_PASS),
-        .BLUE_PASS(BLUE_PASS),
 
         .PRECISION(PRECISION),
         .RESOLUTION_X(RESOLUTION_X),

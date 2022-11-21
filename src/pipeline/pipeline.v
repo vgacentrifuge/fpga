@@ -33,7 +33,7 @@ module pipeline #(
     output fg_pixel_request_active,
 
     // Resulting pixel. Positions for sanity checks.
-    output reg [PIXEL_SIZE - 1:0] pixel_out,
+    output [PIXEL_SIZE - 1:0] pixel_out,
     output reg [PRECISION - 1:0] pixel_x_out,
     output reg [PRECISION - 1:0] pixel_y_out,
     output reg pixel_ready_out,
