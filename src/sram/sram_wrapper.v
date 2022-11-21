@@ -8,7 +8,7 @@ module sram_wrapper #(
     parameter PRECISION = 11,
 
     // The delay between the issuing of a FG-request and the resulting output, should not be changed
-    localparam SRAM_DELAY = 3
+    localparam SRAM_DELAY = 5
 )(
     // module signals
     input clk,
@@ -99,7 +99,7 @@ always @(posedge clk) begin
     spi_pixel_read <= 1'b0;
     spi_write_issued <= {spi_write_issued[SRAM_DELAY-2:0], 1'b0};
     
-    if (request_active) begin
+    if (~spi_pixel_ready && request_active) begin
         // Read from SRAM
         if (request_x >= X_RES || request_y >= Y_RES || request_x < 0 || request_y < 0) begin
             // Request is located outside view area, so we can silently skip SRAM request, and output a blank pixel later
@@ -122,10 +122,6 @@ always @(posedge clk) begin
             sram_addr <= {spi_pixel_x[9:0], spi_pixel_y[9:0]};
             sram_we <= 1;
             sram_data_in <= {1'b0, spi_pixel_in};
-            // if we somehow get a request while reading, mark it as oob and answer with a blank pixel
-            if (request_active) begin
-                out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
-            end
         end
     end
     // Relay SRAM reads to fg requester
