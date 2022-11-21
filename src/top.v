@@ -213,23 +213,30 @@ module top(
     wire fg_pixel_req_active;
     wire [PIXEL_SIZE - 1:0] fg_pixel_response;
     wire fg_pixel_response_ready;
-    wire spi_pixel_read;
+
+    wire ctrl_fg_freeze;
+
+    // SPI image send wires
+    wire [PRECISION - 1:0] spi_pixel_x;
+    wire [PRECISION - 1:0] spi_pixel_y;
+    wire [PIXEL_SIZE - 1:0] spi_pixel_data;
+    wire spi_pixel_ready;
+
     // SRAM module
     sram_wrapper sram(
         .clk(clk_top),
-        .frozen(1'b0),
+        .frozen(ctrl_fg_freeze),
         
         // ADC FIFO connection
         .adc_pixel_data(adc1_fifo_out),
         .adc_pixel_ready(~adc1_fifo_empty),
         .adc_pixel_read(adc1_fifo_read),
         
-        // SPI-pipeline connection (not currently used)
-        .spi_pixel_ready(0),
-        .spi_pixel_read(spi_pixel_read),
-        .spi_pixel_in(0),
-        .spi_pixel_x(0),
-        .spi_pixel_y(0),
+        // SPI-pipeline connection
+        .spi_pixel_ready(spi_pixel_ready),
+        .spi_pixel_in(spi_pixel_data),
+        .spi_pixel_x(spi_pixel_x),
+        .spi_pixel_y(spi_pixel_x),
 
         // FG requests
         .request_active(fg_pixel_req_active),
@@ -285,6 +292,15 @@ module top(
         .pixel_y_out(dac_in_pixel_y),
         .pixel_ready_out(dac_fifo_write),
         
+        // Control signals
+        .ctrl_fg_freeze(ctrl_fg_freeze),
+
+        // SPI pixel data
+        .ctrl_image_pixel_x(spi_pixel_x),
+        .ctrl_image_pixel_y(spi_pixel_y),
+        .ctrl_image_pixel(spi_pixel_data),
+        .ctrl_image_pixel_ready(spi_pixel_ready),
+
         // SPI
         .hw_spi_clk(spi_clk),
         .hw_spi_ss(spi_ss),
