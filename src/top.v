@@ -63,15 +63,10 @@ module top(
     localparam H_BACK_PORCH  = 88;
     localparam V_BACK_PORCH  = 23;
     
-    wire clk40; // Unused
-    wire clk80;
-    wire clk120;
+    wire clk_top;
     clk_wiz_160 clk_wiz(
         .clk_in1(gclk100),
-        .clk_out160(clk160),
-        .clk_out40(clk40),
-        .clk_out80(clk80),
-        .clk_out120(clk120)
+        .clk_out85(clk_top)
     );
     
     // ADC 1 (Foreground)
@@ -114,7 +109,7 @@ module top(
         .FIFO_READ_0_rd_data(adc1_fifo_out),
         .FIFO_READ_0_empty(adc1_fifo_empty),
         .FIFO_READ_0_rd_en(adc1_fifo_read),
-        .rd_clk_0(clk80)
+        .rd_clk_0(clk_top)
     );
     
     // ADC 2 (Background)
@@ -156,7 +151,7 @@ module top(
         .FIFO_READ_0_rd_data(adc2_fifo_out),
         .FIFO_READ_0_empty(adc2_fifo_empty),
         .FIFO_READ_0_rd_en(1'b1),
-        .rd_clk_0(clk80)
+        .rd_clk_0(clk_top)
     );
     
 
@@ -179,7 +174,7 @@ module top(
     pixel_FIFO_dac dac_fifo(
         .FIFO_WRITE_0_wr_data(dac_fifo_in),
         .FIFO_WRITE_0_wr_en(dac_fifo_write),
-        .wr_clk_0(clk80),
+        .wr_clk_0(clk_top),
         
         .FIFO_READ_0_rd_data(dac_fifo_out),
         .FIFO_READ_0_empty(dac_fifo_empty),
@@ -218,10 +213,10 @@ module top(
     wire fg_pixel_req_active;
     wire [PIXEL_SIZE - 1:0] fg_pixel_response;
     wire fg_pixel_response_ready;
-
+    wire spi_pixel_read;
     // SRAM module
     sram_wrapper sram(
-        .clk(clk80),
+        .clk(clk_top),
         .frozen(1'b0),
         
         // ADC FIFO connection
@@ -230,7 +225,8 @@ module top(
         .adc_pixel_read(adc1_fifo_read),
         
         // SPI-pipeline connection (not currently used)
-        .spi_active(0),
+        .spi_pixel_ready(0),
+        .spi_pixel_read(spi_pixel_read),
         .spi_pixel_in(0),
         .spi_pixel_x(0),
         .spi_pixel_y(0),
@@ -261,14 +257,14 @@ module top(
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
 
-        .FOREGROUND_FETCH_CYCLE_DELAY(5),
+        .FOREGROUND_FETCH_CYCLE_DELAY(3),
 
         .RESOLUTION_X(X_RES),
         .RESOLUTION_Y(Y_RES),
         
         .TRANSPARENCY_PRECISION(3)
     ) pipeline(
-        .clk(clk80),
+        .clk(clk_top),
 
         // Input pixel
         .pixel_x(adc2_fifo_out[37:27]),
