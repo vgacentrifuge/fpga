@@ -264,7 +264,7 @@ module top(
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
 
-        .FOREGROUND_FETCH_CYCLE_DELAY(5),
+        .FOREGROUND_FETCH_CYCLE_DELAY(7),
 
         .RESOLUTION_X(X_RES),
         .RESOLUTION_Y(Y_RES),

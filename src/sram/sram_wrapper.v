@@ -68,7 +68,7 @@ wire [16:0] sram_data_out;
 
 function [19:0] get_sram_address(input [PRECISION - 1:0] x, input [PRECISION - 1:0] y); 
     begin
-        get_sram_address = {{20 - PRECISION{1'b0}}, y} * RESOLUTION_X + {{20 - PRECISION{1'b0}}, x};
+        get_sram_address = {{20 - PRECISION{1'b0}}, y} * X_RES + {{20 - PRECISION{1'b0}}, x};
     end
 endfunction
 
