@@ -236,7 +236,7 @@ module top(
         .spi_pixel_ready(spi_pixel_ready),
         .spi_pixel_in(spi_pixel_data),
         .spi_pixel_x(spi_pixel_x),
-        .spi_pixel_y(spi_pixel_x),
+        .spi_pixel_y(spi_pixel_y),
 
         // FG requests
         .request_active(fg_pixel_req_active),
@@ -264,7 +264,7 @@ module top(
         .G_WIDTH(G_WIDTH),
         .B_WIDTH(B_WIDTH),
 
-        .FOREGROUND_FETCH_CYCLE_DELAY(3),
+        .FOREGROUND_FETCH_CYCLE_DELAY(5),
 
         .RESOLUTION_X(X_RES),
         .RESOLUTION_Y(Y_RES),

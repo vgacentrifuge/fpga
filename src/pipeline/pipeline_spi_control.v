@@ -23,10 +23,10 @@ module pipeline_spi_control #(
         output reg [TRANSPARENCY_PRECISION - 1:0] ctrl_fg_transparency,
 
         // Image data sent over SPI
-        output reg [PRECISION - 1:0] ctrl_image_pixel_x,
-        output reg [PRECISION - 1:0] ctrl_image_pixel_y,
-        output reg [PIXEL_SIZE - 1:0] ctrl_image_pixel,
-        output reg ctrl_image_pixel_ready,
+        output [PRECISION - 1:0] ctrl_image_pixel_x,
+        output [PRECISION - 1:0] ctrl_image_pixel_y,
+        output [PIXEL_SIZE - 1:0] ctrl_image_pixel,
+        output ctrl_image_pixel_ready,
 
         // SPI HW interface
         input hw_spi_clk,
