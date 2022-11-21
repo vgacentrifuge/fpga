@@ -1,3 +1,4 @@
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 set_property -dict {PACKAGE_PIN C13 IOSTANDARD LVCMOS33 DIRECTION IN} [get_ports gclk100]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {dataclkin_2_IBUF}]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {clk_wiz/inst/clk_in1_clk_wiz_160}]
