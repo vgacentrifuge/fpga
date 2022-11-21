@@ -66,6 +66,12 @@ reg [19:0] sram_addr;
 reg [16:0] sram_data_in;
 wire [16:0] sram_data_out;
 
+function [19:0] get_sram_address(input [PRECISION - 1:0] x, input [PRECISION - 1:0] y); 
+    begin
+        get_sram_address = {{20 - PRECISION{1'b0}}, y} * RESOLUTION_X + {{20 - PRECISION{1'b0}}, x};
+    end
+endfunction
+
 sram_interface sram(
     .clk(clk),
     .write_enable(sram_we),
@@ -105,7 +111,7 @@ always @(posedge clk) begin
             // Request is located outside view area, so we can silently skip SRAM request, and output a blank pixel later
             out_of_bounds_read <= {out_of_bounds_read[SRAM_DELAY-2:0], 1'b1};
         end else begin
-            sram_addr <= {request_x[9:0], request_y[9:0]};
+            sram_addr <= get_sram_address(request_x, request_y);
         end
         read_issued <= {read_issued[SRAM_DELAY-2:0], 1'b1};
     end else begin
@@ -113,13 +119,13 @@ always @(posedge clk) begin
         if (adc_pixel_ready && ~frozen && adc_pixel_data[37:27] < X_RES && adc_pixel_data[26:16] < Y_RES) begin
             // We are within frame and not freeze-framing
             // Write pixel to SRAM, use the 10 lowest bits of x and y
-            sram_addr <= {adc_pixel_data[36:27], adc_pixel_data[25:16]};
+            sram_addr <= get_sram_address(adc_pixel_data[36:27], adc_pixel_data[25:16]);
             sram_we <= 1;
             sram_data_in <= {1'b0, adc_pixel_data[15:0]};
         end else if (spi_pixel_ready && frozen) begin
             // Write SPI-pixel into SRAM
             spi_write_issued <= {spi_write_issued[SRAM_DELAY-2:0], 1'b1};
-            sram_addr <= {spi_pixel_x[9:0], spi_pixel_y[9:0]};
+            sram_addr <= get_sram_address(spi_pixel_x, spi_pixel_y);
             sram_we <= 1;
             sram_data_in <= {1'b0, spi_pixel_in};
         end
