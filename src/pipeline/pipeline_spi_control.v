@@ -1,6 +1,10 @@
 module pipeline_spi_control #(
     parameter PRECISION = 11,
-    parameter TRANSPARENCY_PRECISION = 3
+    parameter PIXEL_SIZE = 16,
+    parameter TRANSPARENCY_PRECISION = 3,
+
+    parameter RESOLUTION_X = 800,
+    parameter RESOLUTION_Y = 600
 )(
         input clk,
         
@@ -17,6 +21,12 @@ module pipeline_spi_control #(
         output reg [PRECISION - 1:0] ctrl_fg_clip_bottom,
         
         output reg [TRANSPARENCY_PRECISION - 1:0] ctrl_fg_transparency,
+
+        // Image data sent over SPI
+        output reg [PRECISION - 1:0] ctrl_image_pixel_x,
+        output reg [PRECISION - 1:0] ctrl_image_pixel_y,
+        output reg [PIXEL_SIZE - 1:0] ctrl_image_pixel,
+        output reg ctrl_image_pixel_ready,
 
         // SPI HW interface
         input hw_spi_clk,
@@ -37,15 +47,16 @@ module pipeline_spi_control #(
     localparam CMD_SET_FOREGROUND_CLIP_RIGHT = 8'h08;
     localparam CMD_SET_FOREGROUND_CLIP_TOP = 8'h09;
     localparam CMD_SET_FOREGROUND_CLIP_BOTTOM = 8'h0A;
-    localparam CMD_SET_FOREGROUND_FREEZE = 8'h0B; // Not implemented
-    localparam CMD_START_IMAGE_UPLOAD = 8'h0C; // Not implemented
+    localparam CMD_SET_FOREGROUND_FREEZE = 8'h0B;
+    localparam CMD_START_IMAGE_UPLOAD = 8'h0C; 
     localparam CMD_NO_OP = 8'hFF;
 
     // Command processing states
     localparam STATE_AWAITING_COMMAND = 3'b000;
     localparam STATE_AWAITING_DATA_1 = 3'b001;
     localparam STATE_AWAITING_DATA_2 = 3'b010;
-    localparam STATE_AWAITING_PROCESSING = 3'b011;
+    localparam STATE_AWAITING_IMAGE = 3'b011;
+    localparam STATE_AWAITING_PROCESSING = 3'b101;
 
     // Function for processing the commands. Allows us to keep the logic
     // here and not in the state machine
@@ -127,18 +138,6 @@ module pipeline_spi_control #(
 
     wire spi_active;
 
-    // SPI interface
-    spi_slave spi_handle(
-        .clk(clk),
-        .hw_spi_clk(hw_spi_clk),
-        .hw_spi_ss(hw_spi_ss),
-        .hw_spi_mosi(hw_spi_mosi),
-        .hw_spi_miso(hw_spi_miso),
-        .spi_active(spi_active),
-        .byte_out(byte_out),
-        .byte_ready(byte_ready)
-    );
-
     // Command processing
     always @ (posedge clk) begin
         if (~spi_active) begin
@@ -150,10 +149,16 @@ module pipeline_spi_control #(
                 if (byte_ready) begin
                     command_buffer <= byte_out;
 
-                    if (is_no_arg) begin
-                        command_state <= STATE_AWAITING_PROCESSING;
-                    end else begin
-                        command_state <= STATE_AWAITING_DATA_1;
+                    if (byte_out == CMD_START_IMAGE_UPLOAD) begin
+                        command_state <= STATE_AWAITING_IMAGE;
+                    end 
+                    else
+                    begin 
+                        if (is_no_arg) begin
+                            command_state <= STATE_AWAITING_PROCESSING;
+                        end else begin
+                            command_state <= STATE_AWAITING_DATA_1;
+                        end
                     end
                 end
             end
@@ -177,11 +182,45 @@ module pipeline_spi_control #(
             STATE_AWAITING_PROCESSING: begin
                 command_state <= process_command(command_buffer, argument_buffer);
             end
+            STATE_AWAITING_IMAGE: begin
+                // Do nothing
+            end
             default: begin
                 // No clue what is going on, just start over :)
                 command_state <= STATE_AWAITING_COMMAND;
             end
         endcase
-    
     end
+
+    // Image upload handling
+    pipeline_spi_image_receiver #(
+        .PRECISION(PRECISION),
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .RESOLUTION_X(RESOLUTION_X),
+        .RESOLUTION_Y(RESOLUTION_Y)
+    ) spi_image_receiver(
+        .clk(clk),
+        .enable_receive(command_state == STATE_AWAITING_IMAGE),
+
+        .spi_byte_in(byte_out),
+        .spi_byte_ready(byte_ready),
+
+        .pixel_out(ctrl_image_pixel),
+        .pixel_x(ctrl_image_pixel_x),
+        .pixel_y(ctrl_image_pixel_y),
+        .pixel_ready(ctrl_image_pixel_ready)
+    );
+
+    // SPI interface
+    spi_slave spi_handle(
+        .clk(clk),
+        .hw_spi_clk(hw_spi_clk),
+        .hw_spi_ss(hw_spi_ss),
+        .hw_spi_mosi(hw_spi_mosi),
+        .hw_spi_miso(hw_spi_miso),
+        .spi_active(spi_active),
+        .byte_out(byte_out),
+        .byte_ready(byte_ready)
+    );
 endmodule

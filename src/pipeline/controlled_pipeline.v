@@ -47,6 +47,12 @@ module controlled_pipeline #(
 
     output ctrl_fg_freeze,
 
+    // Image data sent over SPI
+    output [PRECISION - 1:0] ctrl_image_pixel_x,
+    output [PRECISION - 1:0] ctrl_image_pixel_y,
+    output [PIXEL_SIZE - 1:0] ctrl_image_pixel,
+    output ctrl_image_pixel_ready,
+
     // SPI HW interface
     input hw_spi_clk,
     input hw_spi_ss,
@@ -127,7 +133,11 @@ module controlled_pipeline #(
 
     // SPI control module instance, assigning control values to above
     pipeline_spi_control #(
-        .PRECISION(PRECISION)
+        .PRECISION(PRECISION),
+        .PIXEL_SIZE(PIXEL_SIZE),
+
+        .RESOLUTION_X(RESOLUTION_X),
+        .RESOLUTION_Y(RESOLUTION_Y)
     ) pipeline_spi_control_handle(
         .clk(clk),
         
@@ -141,6 +151,11 @@ module controlled_pipeline #(
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
         .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
+
+        .ctrl_image_pixel_x(ctrl_image_pixel_x),
+        .ctrl_image_pixel_y(ctrl_image_pixel_y),
+        .ctrl_image_pixel(ctrl_image_pixel),
+        .ctrl_image_pixel_ready(ctrl_image_pixel_ready),
 
         .hw_spi_clk(hw_spi_clk),
         .hw_spi_ss(hw_spi_ss),
