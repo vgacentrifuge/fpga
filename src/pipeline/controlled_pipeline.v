@@ -153,7 +153,7 @@ module controlled_pipeline #(
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
         
         .ctrl_fg_transparency(ctrl_fg_transparency),
-        .ctrl_green_screen_filter(ctrl_green_screen_filter)
+        .ctrl_green_screen_filter(ctrl_green_screen_filter),
 
         .ctrl_fg_clip_left(ctrl_fg_clip_left),
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
