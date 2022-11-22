@@ -21,6 +21,7 @@ module pipeline_spi_control #(
         output reg [PRECISION - 1:0] ctrl_fg_clip_bottom,
         
         output reg [TRANSPARENCY_PRECISION - 1:0] ctrl_fg_transparency,
+        output reg [PIXEL_SIZE - 1:0] ctrl_green_screen_filter,
 
         // Image data sent over SPI
         output [PRECISION - 1:0] ctrl_image_pixel_x,
@@ -49,6 +50,8 @@ module pipeline_spi_control #(
     localparam CMD_SET_FOREGROUND_CLIP_BOTTOM = 8'h0A;
     localparam CMD_SET_FOREGROUND_FREEZE = 8'h0B;
     localparam CMD_START_IMAGE_UPLOAD = 8'h0C; 
+    localparam CMD_CHROMA_KEY_FLIP_FG_BG = 8'h0D; // Unused
+    localparam CMD_CHROMA_KEY_SET_FILTER = 8'h0E;
     localparam CMD_NO_OP = 8'hFF;
 
     // Command processing states
@@ -72,6 +75,7 @@ module pipeline_spi_control #(
                 ctrl_fg_clip_top = {PRECISION{1'b0}};
                 ctrl_fg_clip_bottom = {PRECISION{1'b0}};
                 ctrl_fg_freeze = 1'b0;
+                ctrl_green_screen_filter = 16'b0010010110001100;
             end
             CMD_SET_FOREGROUND_MODE: begin
                 ctrl_overlay_mode = argument_buffer[1:0];
@@ -102,6 +106,9 @@ module pipeline_spi_control #(
             end
             CMD_SET_FOREGROUND_TRANSPARENCY: begin
                 ctrl_fg_transparency = argument_buffer[TRANSPARENCY_PRECISION - 1:0];
+            end
+            CMD_CHROMA_KEY_SET_FILTER: begin
+                ctrl_green_screen_filter = argument_buffer[PIXEL_SIZE - 1:0];
             end
             default: begin
                 // Do nothing

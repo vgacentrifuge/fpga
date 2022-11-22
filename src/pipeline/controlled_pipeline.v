@@ -78,6 +78,11 @@ module controlled_pipeline #(
     // Foreground transparency. 0 means that the foreground is completely
     // opaque
     wire [TRANSPARENCY_PRECISION - 1:0] ctrl_fg_transparency;
+    // The filter used for green screen. See pipeline_mode_chroma_key.v for details.
+    // Consists of 3 parts, R, G, B with 5, 6, 5 bits respectively. The R and B values
+    // are upper limits, while the G value is a lower limit for what is considered green
+    // screen.
+    wire [PIXEL_SIZE - 1:0] ctrl_green_screen_filter;
 
     // Foreground clipping, i.e. how many pixels to remove from the foreground
     // on each side. Applies to the foreground coordinates before scaling, meaning 
@@ -128,7 +133,7 @@ module controlled_pipeline #(
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
         .ctrl_fg_clip_bottom(ctrl_fg_clip_bottom),
-        .ctrl_green_screen_filter(16'b0010010110001100) // Temporarily hardcoded
+        .ctrl_green_screen_filter(ctrl_green_screen_filter)
     );
 
     // SPI control module instance, assigning control values to above
@@ -146,7 +151,10 @@ module controlled_pipeline #(
         .ctrl_fg_scale(ctrl_fg_scale),
         .ctrl_fg_offset_x(ctrl_fg_offset_x),
         .ctrl_fg_offset_y(ctrl_fg_offset_y),
+        
         .ctrl_fg_transparency(ctrl_fg_transparency),
+        .ctrl_green_screen_filter(ctrl_green_screen_filter)
+
         .ctrl_fg_clip_left(ctrl_fg_clip_left),
         .ctrl_fg_clip_right(ctrl_fg_clip_right),
         .ctrl_fg_clip_top(ctrl_fg_clip_top),
